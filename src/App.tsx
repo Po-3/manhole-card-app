@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { auth, provider } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import type { User } from "firebase/auth";
+
 import {
   getFirestore,
   collection,
@@ -12,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// ---- Firestore 操作用ユーティリティ ----
+// Firestore Utility
 async function getOwnedCards(): Promise<string[]> {
   const user = getAuth().currentUser;
   if (!user) return [];
@@ -36,7 +37,7 @@ async function removeOwnedCard(cardId: string) {
   await deleteDoc(ref);
 }
 
-// ---- 型定義 ----
+// 型定義
 type VersionType = "通常" | "英語" | "特別";
 type Card = {
   id: string;
@@ -58,7 +59,7 @@ const TOTAL_KEY = "manhole_total";
 const versionLabels: VersionType[] = ["通常", "英語", "特別"];
 const pageSize = 100;
 
-// ---- バージョン判定 ----
+// バージョン判定
 function getCardNo(cardId: string) {
   const m = cardId.match(/([A-Z]\d{3})$/);
   return m ? m[1] : cardId;
@@ -115,7 +116,7 @@ export default function App() {
           }
         }
 
-        // Firestore から所持データ取得
+        // Firestoreから所持データ取得
         if (user) {
           const ownedList = await getOwnedCards();
           for (const g of groupsMap.values()) {
@@ -218,64 +219,6 @@ export default function App() {
     setTotalEdit(false);
   };
 
-  // CSV 出力
-  const exportCSV = () => {
-    const rows = [["市町村", "No.", ...versionLabels.map(v => v + "所持")]];
-    groups.forEach(g => {
-      rows.push([
-        g.city,
-        g.no,
-        ...versionLabels.map(v =>
-          g.owned[v] ? "1" : g.versions.some(x => x.version === v) ? "0" : ""
-        ),
-      ]);
-    });
-    const csv =
-      "\uFEFF" +
-      rows.map(r => r.map(f => `"${f.replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "manhole_collection.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // CSV インポート
-  const importCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const text = ev.target?.result as string;
-      const lines = text.split(/\r?\n/);
-      const hdr = lines[0].split(",");
-      const newGroups = groups.map(g => ({ ...g, owned: { ...g.owned } }));
-      lines.slice(1).forEach(line => {
-        const cols = line.split(",");
-        if (cols.length < 2) return;
-        const city = cols[0].replace(/"/g, "");
-        const no = cols[1].replace(/"/g, "");
-        const i = newGroups.findIndex(g => g.city === city && g.no === no);
-        if (i < 0) return;
-        versionLabels.forEach((v, vi) => {
-          if (hdr[2 + vi] && cols[2 + vi]) {
-            newGroups[i].owned[v] = cols[2 + vi].replace(/"/g, "") === "1";
-          }
-        });
-      });
-      setGroups(newGroups);
-      setFiltered(newGroups);
-      const save: Record<string, any> = {};
-      newGroups.forEach(g => {
-        save[`${g.city}-${g.no}`] = g.owned;
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(save));
-    };
-    reader.readAsText(file, "utf-8");
-  };
-
   // ページ分割
   const pageMax = Math.ceil(filtered.length / pageSize);
   const showList = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -291,102 +234,98 @@ export default function App() {
   ).sort();
 
   return (
-    <div className="main-root">
-      {/* 認証・タイトル */}
-      <div className="header-row">
-        <h1>マンホールカード管理</h1>
-        <div>
-          {user ? (
-            <>
-              <span className="user-name">こんにちは、{user.displayName}さん</span>
-              <button onClick={handleLogout}>ログアウト</button>
-            </>
-          ) : (
-            <button onClick={handleLogin}>Googleでログイン</button>
-          )}
-        </div>
-      </div>
+    <div className="bg-gradient-to-br from-indigo-100 via-pink-100 to-yellow-100 min-h-screen py-4">
+      <div className="max-w-5xl mx-auto px-2">
 
-      {/* 進捗バー&CSV */}
-      <div className="progress-row">
-        <span>
-          所持 <b>{ownedCount}</b> / {total}
-          <button onClick={handleEdit}>TOTAL編集</button>
-        </span>
-        <div className="progress-bar">
-          <div className="progress-bar-inner" style={{ width: percent + "%" }} />
-          <span className="progress-percent">{percent}%</span>
-        </div>
-        <button onClick={exportCSV}>CSV出力</button>
-        <input type="file" accept=".csv" onChange={importCSV} />
-      </div>
-
-      {/* TOTAL編集モーダル */}
-      {totalEdit && (
-        <div className="modal-bg" onClick={resetTotal}>
-          <div className="modal-box" onClick={e => e.stopPropagation()}>
-            <h3>TOTAL枚数を編集</h3>
-            <input
-              type="number"
-              defaultValue={total}
-              min={1}
-              onBlur={e => saveTotal(Number(e.target.value))}
-              autoFocus
-            />
-            <button onClick={resetTotal}>リセット</button>
+        {/* 認証・タイトル */}
+        <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#24344d] mb-2 tracking-tight text-center drop-shadow">
+            マンホールカードコレクション
+          </h1>
+          <div>
+            {user ? (
+              <>
+                <span className="mr-2 text-sm">こんにちは、{user.displayName}さん</span>
+                <button className="bg-gray-700 text-white px-4 py-1 rounded" onClick={handleLogout}>ログアウト</button>
+              </>
+            ) : (
+              <button className="bg-blue-500 text-white px-4 py-1 rounded" onClick={handleLogin}>Googleでログイン</button>
+            )}
           </div>
         </div>
-      )}
 
-      {/* 検索・フィルター */}
-      <div className="filter-row">
-        <input
-          type="search"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="市町村名、都道府県、No.で検索"
-        />
-        <select value={filterPref} onChange={e => setFilterPref(e.target.value)}>
-          <option value="ALL">都道府県すべて</option>
-          {prefs.map(p => <option key={p} value={p}>{p}</option>)}
-        </select>
-        <select value={filterCity} onChange={e => setFilterCity(e.target.value)}>
-          <option value="ALL">市町村すべて</option>
-          {cities.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select value={filterVer} onChange={e => setFilterVer(e.target.value as any)}>
-          <option value="ALL">バージョン全て</option>
-          {versionLabels.map(v => <option key={v} value={v}>{v}</option>)}
-        </select>
-        <select value={filterOwned} onChange={e => setFilterOwned(e.target.value as any)}>
-          <option value="ALL">所持/未所持すべて</option>
-          <option value="OWNED">所持あり</option>
-          <option value="NOTOWNED">未所持のみ</option>
-        </select>
-      </div>
-
-      {/* --- ここがサムネイル横並び & チェック --- */}
-      <div className="card-list">
-        {showList.map((g, i) => (
-          <div className="card-box" key={`${g.city}-${g.no}`}>
-            {/* サムネイル画像 */}
-            <img
-              className="card-img"
-              src={g.versions[0].imageUrl}
-              alt="サムネイル"
-              onClick={() => setModalUrl(g.versions[0].imageUrl)}
+        {/* 進捗バー */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span className="font-medium text-sm">
+            所持 <b>{ownedCount}</b> / {total}
+            <button className="ml-2 bg-gray-200 px-2 py-0.5 rounded text-xs" onClick={handleEdit}>
+              TOTAL編集
+            </button>
+          </span>
+          <div className="flex-1 min-w-[120px] bg-gray-200 rounded h-4 relative overflow-hidden mx-2">
+            <div
+              className="bg-green-400 rounded h-4 transition-all"
+              style={{ width: percent + "%" }}
             />
-            <div className="card-detail">
-              <div className="card-city">{g.city}</div>
-              <div className="card-pref">{g.prefecture}</div>
-              <div className="card-no">No: {g.no}</div>
-              <div className="check-row">
+            <span className="absolute right-2 top-0 text-xs font-bold text-gray-800">{percent}%</span>
+          </div>
+        </div>
+
+        {/* 検索・フィルター */}
+        <div className="flex flex-wrap gap-2 mb-5 sm:flex-col">
+          <input
+            type="search"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="市町村名、都道府県、No.で検索"
+            className="w-44 sm:w-full px-2 py-1 rounded border border-gray-300"
+          />
+          <select value={filterPref} onChange={e => setFilterPref(e.target.value)} className="w-32 sm:w-full px-2 py-1 rounded border border-gray-300">
+            <option value="ALL">都道府県すべて</option>
+            {prefs.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <select value={filterCity} onChange={e => setFilterCity(e.target.value)} className="w-32 sm:w-full px-2 py-1 rounded border border-gray-300">
+            <option value="ALL">市町村すべて</option>
+            {cities.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select value={filterVer} onChange={e => setFilterVer(e.target.value as any)} className="w-28 sm:w-full px-2 py-1 rounded border border-gray-300">
+            <option value="ALL">バージョン全て</option>
+            {versionLabels.map(v => <option key={v} value={v}>{v}</option>)}
+          </select>
+          <select value={filterOwned} onChange={e => setFilterOwned(e.target.value as any)} className="w-36 sm:w-full px-2 py-1 rounded border border-gray-300">
+            <option value="ALL">所持/未所持すべて</option>
+            <option value="OWNED">所持あり</option>
+            <option value="NOTOWNED">未所持のみ</option>
+          </select>
+        </div>
+
+        {/* カード一覧グリッド */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+          {showList.map((g, i) => (
+            <div key={`${g.city}-${g.no}`}
+              className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all flex flex-col items-center pb-3 pt-3 px-2 border border-[#e1e4ed] hover:-translate-y-1"
+            >
+              {/* 画像（クリックで拡大） */}
+              <img
+                src={g.versions[0].imageUrl}
+                alt={`${g.city} サムネイル`}
+                className="w-20 h-28 object-contain rounded-lg mb-2 cursor-pointer border"
+                onClick={() => setModalUrl(g.versions[0].imageUrl)}
+              />
+              {/* 市町村・都道府県・No */}
+              <div className="text-center w-full mb-1">
+                <div className="font-semibold text-sm truncate">{g.city}</div>
+                <div className="text-xs text-gray-500 truncate">{g.prefecture}</div>
+                <div className="text-xs text-gray-400">{g.no}</div>
+              </div>
+              {/* バージョンごとチェック */}
+              <div className="flex justify-center gap-2">
                 {versionLabels.map(label =>
                   g.versions.some(v => v.version === label) ? (
-                    <label key={label} className="check-label">
+                    <label key={label} className="flex items-center gap-1 text-xs font-medium">
                       <input
-                        className="custom-check"
                         type="checkbox"
+                        className="accent-blue-400"
                         checked={!!g.owned[label]}
                         onChange={() => toggle((page - 1) * pageSize + i, label)}
                       />
@@ -396,39 +335,39 @@ export default function App() {
                 )}
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* ページネーション */}
-      <div className="pagination-row">
-        {Array.from({ length: pageMax }, (_, i) => i + 1).map(pn => (
-          <button
-            key={pn}
-            onClick={() => setPage(pn)}
-            className={page === pn ? "active-page" : ""}
-          >
-            {pn}
-          </button>
-        ))}
-      </div>
+        {/* ページネーション */}
+        <div className="mt-5 mb-1 flex flex-wrap justify-center gap-1">
+          {Array.from({ length: pageMax }, (_, i) => i + 1).map(pn => (
+            <button
+              key={pn}
+              onClick={() => setPage(pn)}
+              className={`px-3 py-1 rounded border text-xs ${page === pn ? "bg-indigo-400 text-white font-bold" : "bg-white border-gray-300 text-gray-700"}`}
+            >
+              {pn}
+            </button>
+          ))}
+        </div>
 
-      <p className="item-count-info">
-        （{filtered.length}件中 {showList.length}件表示／サムネイルクリックで拡大）
-      </p>
+        <p className="text-xs text-gray-500 mb-2 text-center">
+          （{filtered.length}件中 {showList.length}件表示／サムネイルクリックで拡大）
+        </p>
+      </div>
 
       {/* 画像拡大モーダル */}
       {modalUrl && (
-        <div className="modal-bg" onClick={() => setModalUrl(null)}>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setModalUrl(null)}>
           <img
             src={modalUrl}
             alt="拡大画像"
-            className="modal-img"
+            className="max-w-[90vw] max-h-[80vh] shadow-2xl bg-white rounded-lg p-2"
             onClick={e => e.stopPropagation()}
           />
           <button
-            className="modal-close"
             onClick={() => setModalUrl(null)}
+            className="absolute top-6 right-8 text-4xl font-bold text-white bg-black/50 rounded-full w-12 h-12 flex items-center justify-center"
           >
             ×
           </button>

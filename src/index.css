@@ -1,5 +1,7 @@
 /* 1. Tailwind Base（リセット＆プリプロセッサ） */
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* 2. グローバルスタイル＆カスタムリセット */
 :root {
@@ -16,6 +18,9 @@
 }
 
 body {
+  font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', Arial, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffe7fa 100%);
+  color: #223;
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
@@ -154,9 +159,3 @@ input:focus, select:focus {
   border-radius: 10px;
   transition: width .3s;
 }
-
-/* 3. Tailwind Components（カスタムコンポーネント追加用） */
-@tailwind components;
-
-/* 4. Tailwind Utilities（ユーティリティクラス） */
-@tailwind utilities;
