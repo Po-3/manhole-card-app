@@ -135,18 +135,19 @@ export default function App() {
         <button className="flex flex-col items-center text-xs text-gray-400"><span>サマリー</span></button>
       </nav>
 
-      {/* カード詳細モーダル（中央・背景あり・✕で閉じる） */}
+      {/* カード詳細モーダル */}
       {selected && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50"
+          className="fixed inset-0 flex items-center justify-center z-50"
+          style={{ background: "rgba(20,20,30,0.60)", backdropFilter: "blur(2px)" }}
           onClick={() => setSelected(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl p-4 max-w-xs w-full mx-4 relative"
+            className="bg-white rounded-2xl shadow-2xl p-5 max-w-xs w-full mx-4 relative flex flex-col items-center"
             onClick={e => e.stopPropagation()}
           >
-            <button className="absolute right-2 top-2 text-3xl text-gray-400 font-bold" onClick={() => setSelected(null)}>×</button>
-            <img src={selected.imageUrl} alt="" className="w-40 h-56 object-contain rounded mx-auto mb-2 border shadow" />
+            <button className="absolute right-3 top-2 text-3xl text-gray-400 font-bold" onClick={() => setSelected(null)}>&times;</button>
+            <img src={selected.imageUrl} alt="" className="w-40 h-56 object-contain rounded mb-3 border shadow" />
             <div className="font-bold text-base mb-1 text-center">{selected.city}</div>
             <div className="text-xs text-gray-400 mb-1 text-center">{selected.id}</div>
             <div className="text-xs text-gray-600 mb-1 text-center">{selected.series} {selected.details}</div>
