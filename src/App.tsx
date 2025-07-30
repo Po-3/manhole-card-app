@@ -335,12 +335,12 @@ export default function App() {
               className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all flex flex-col items-center pb-3 pt-3 px-2 border border-[#e1e4ed] hover:-translate-y-1"
             >
               {/* 画像（クリックで拡大） */}
-              <img
-                src={g.versions[0].imageUrl}
-                alt={`${g.city} サムネイル`}
-                className="w-20 h-28 object-contain rounded-lg mb-2 cursor-pointer border"
-                onClick={() => setModalUrl(g.versions[0].imageUrl)}
-              />
+<img
+  src={g.versions[0].imageUrl}
+  alt={`${g.city} サムネイル`}
+  className="w-10 h-14 object-contain rounded-md mb-1 cursor-pointer border"
+  onClick={() => setModalUrl(g.versions[0].imageUrl)}
+/>
               {/* 市町村・都道府県・No */}
               <div className="text-center w-full mb-1">
                 <div className="font-semibold text-sm truncate">{g.city}</div>
