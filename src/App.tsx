@@ -296,7 +296,7 @@ export default function App() {
 
       {/* 認証・タイトル */}
       <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
-        <h1 className="text-xl font-bold tracking-tight">マンホールカード</h1>
+        <h1 className="text-xl font-bold tracking-tight">マンホールカード管理</h1>
         <div>
           {user ? (
             <>
