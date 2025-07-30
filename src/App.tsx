@@ -17,7 +17,6 @@ export default function App() {
   const [cards, setCards] = useState<Card[]>([]);
   const [tab, setTab] = useState("ALL");
   const [series, setSeries] = useState("すべて");
-  const [region, setRegion] = useState("ALL");
   const [owned, setOwned] = useState<Set<string>>(new Set());
   const [favorite, setFavorite] = useState<Set<string>>(new Set());
 
