@@ -79,7 +79,7 @@ export default function App() {
         <div className="flex flex-col gap-1 mb-2">
           <div className="flex justify-between items-end text-sm px-1">
             <span>所有: <b>{ownedCount}</b> / {total}（<b>{percentOwned}%</b>）</span>
-            <span>座標豚: <b>{coordCount}</b>（<b>{percentCoord}%</b>）</span>
+            <span>座標蓋: <b>{coordCount}</b>（<b>{percentCoord}%</b>）</span>
           </div>
           <div className="progress-bar">
             <div className="progress-bar-inner" style={{ width: `${percentOwned}%` }} />
