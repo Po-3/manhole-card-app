@@ -1,109 +1,59 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-// カード型
 type Card = {
-  id: string;
-  series: string;
-  imageUrl: string;
-  prefecture: string;
-  city: string;
-  details: string;
+  id: string; series: string; imageUrl: string;
+  prefecture: string; city: string; details: string;
 };
-
-const TABS = ["ALL", "お気に入り", "取得済", "未取得"];
-const SERIES = ["すべて", "26", "25", "24", "23", "22", "21"]; // 実際はjsonから取得推奨
 
 export default function App() {
   const [cards, setCards] = useState<Card[]>([]);
-  const [tab, setTab] = useState("ALL");
-  const [series, setSeries] = useState("すべて");
-  const [owned, setOwned] = useState<Set<string>>(new Set());
-  const [favorite, setFavorite] = useState<Set<string>>(new Set());
+  const [popup, setPopup] = useState<Card|null>(null);
 
-  // データ読み込み
   useEffect(() => {
-    fetch("/manhole_cards.json")
-      .then(res => res.json())
-      .then((data: Card[]) => setCards(data));
+    fetch("/manhole_cards.json").then(res=>res.json()).then(setCards);
   }, []);
 
-  // フィルタ
-  let filtered = cards;
-  if (series !== "すべて") filtered = filtered.filter(c => c.series.includes(series));
-  if (tab === "取得済") filtered = filtered.filter(c => owned.has(c.id));
-  if (tab === "未取得") filtered = filtered.filter(c => !owned.has(c.id));
-  if (tab === "お気に入り") filtered = filtered.filter(c => favorite.has(c.id));
-  // 地域は割愛
+  // フィルタ等は省略可
 
-  // UI
   return (
-    <div className="bg-[#f8f8fa] min-h-screen pb-2">
-      {/* ヘッダー */}
-      <div className="px-3 pt-3 flex flex-col items-center">
-        <div className="flex w-full justify-between items-center mb-2">
-          <span className="font-bold text-orange-500 text-lg">ALL</span>
-          <span className="font-bold text-orange-500 text-xl">{owned.size} / {cards.length || 0}</span>
-        </div>
-        {/* 上部タブ */}
-        <div className="flex gap-2 w-full justify-start mb-2">
-          {TABS.map(t => (
-            <button key={t}
-              className={`rounded-full px-3 py-1 text-xs font-bold shadow-sm transition 
-                ${tab === t ? "bg-orange-400 text-white" : "bg-gray-100 text-gray-400"}`}
-              onClick={() => setTab(t)}
-            >{t}</button>
-          ))}
-        </div>
-        {/* 弾シリーズタブ */}
-        <div className="flex gap-2 w-full justify-start overflow-x-auto">
-          {SERIES.map(s => (
-            <button key={s}
-              className={`rounded-full px-3 py-1 text-xs font-bold shadow-sm transition
-                ${series === s ? "bg-orange-400 text-white" : "bg-gray-100 text-gray-500"}`}
-              onClick={() => setSeries(s)}
-            >{s === "すべて" ? "ALL" : `第${s}弾`}</button>
-          ))}
-        </div>
+    <div className="min-h-screen bg-gray-50 p-3 max-w-md mx-auto">
+      <header className="text-orange-400 text-2xl font-bold py-3">ALL</header>
+      {/* タブ・フィルタ群 */}
+      <div className="flex gap-2 overflow-x-auto mb-3">
+        <button className="bg-orange-400 text-white rounded-full px-4 py-1 font-bold">ALL</button>
+        <button className="bg-gray-200 text-gray-500 rounded-full px-4 py-1">取得済</button>
+        {/* ... */}
       </div>
-      {/* サムネイルグリッド */}
-      <div className="grid grid-cols-2 gap-3 px-2 pt-4">
-        {filtered.map(card => (
-          <div key={card.id}
-            className="flex flex-col items-center rounded-xl shadow border-2 border-orange-300 bg-white py-2 transition relative"
+      {/* グリッド */}
+      <div className="grid grid-cols-2 gap-3">
+        {cards.map(card=>(
+          <button key={card.id} className="bg-orange-400 rounded-xl p-2 flex flex-col items-center"
+            onClick={()=>setPopup(card)}
           >
-            {/* シリーズ */}
-            <span className="absolute top-2 left-2 bg-orange-400 text-white text-xs font-bold rounded px-1.5 py-0.5">{card.series.replace("第","").replace("弾","")}</span>
-            {/* サムネイル */}
-            <img src={card.imageUrl} alt={card.city} className="w-16 h-16 object-contain rounded-lg bg-gray-100 border mb-1" />
-            {/* 県・市・ID */}
-            <span className="text-[12px] font-bold text-orange-700 truncate w-full text-center">{card.prefecture}</span>
-            <span className="text-[11px] text-gray-700 truncate w-full text-center">{card.city}</span>
-            <span className="text-[10px] text-gray-500">{card.details}</span>
-            {/* チェックマーク */}
-            <div className="mt-1 flex gap-2">
-              <button
-                className="text-[18px] text-green-500"
-                onClick={() => setOwned(prev => {
-                  const next = new Set(prev);
-                  next.has(card.id) ? next.delete(card.id) : next.add(card.id);
-                  return next;
-                })}
-              >{owned.has(card.id) ? "✔️" : " "}</button>
-              <button
-                className="text-[18px] text-yellow-500"
-                onClick={() => setFavorite(prev => {
-                  const next = new Set(prev);
-                  next.has(card.id) ? next.delete(card.id) : next.add(card.id);
-                  return next;
-                })}
-              >{favorite.has(card.id) ? "★" : "☆"}</button>
+            <div className="text-xl text-white font-extrabold mb-1">{card.series.replace(/[^\d]/g,'')}</div>
+            <div className="h-16 w-full bg-white/90 rounded-md border flex items-center justify-center mb-1">
+              <span className="text-2xl text-gray-300 font-extrabold">✓</span>
             </div>
-          </div>
+            <div className="text-xs text-white truncate">{card.prefecture} {card.city}</div>
+            <div className="text-xs font-mono text-white">{card.details}</div>
+          </button>
         ))}
       </div>
-      {/* 取得済ゼロ時 */}
-      {!filtered.length && (
-        <div className="text-center text-gray-400 py-10">カードが見つかりません</div>
+      {/* 詳細スライドアップ */}
+      {popup && (
+        <div className="fixed inset-0 bg-black/30 z-50 flex items-end" onClick={()=>setPopup(null)}>
+          <div className="bg-gradient-to-t from-orange-300/90 to-orange-100/90 w-full p-5 rounded-t-2xl shadow-2xl" onClick={e=>e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-lg font-bold">{popup.series}　{popup.prefecture} {popup.city}</div>
+              <button className="text-2xl" onClick={()=>setPopup(null)}>&times;</button>
+            </div>
+            <div className="text-base font-mono mb-2">{popup.details}</div>
+            <div className="flex gap-2 mt-3">
+              <a href="#" className="bg-white rounded px-3 py-1 shadow text-orange-600 font-bold">配布状況</a>
+              <a href="#" className="bg-white rounded px-3 py-1 shadow text-orange-600 font-bold">検索</a>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
