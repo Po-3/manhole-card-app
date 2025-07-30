@@ -1,21 +1,36 @@
-import { useState } from "react";
-import { cardsData } from "./data";
+import { useState, useEffect } from "react";
 
-type Card = typeof cardsData[0];
+type Card = {
+  id: string;
+  city: string;
+  no: string;
+  code: string;
+  place: string;
+  image: string;
+  latitude: number;
+  longitude: number;
+};
 
 export default function App() {
+  const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<Card | null>(null);
 
-  // 所持・実物などのフラグ（ここではダミー）
-  const total = cardsData.length;
+  // JSONファイルからデータを読む
+  useEffect(() => {
+    fetch("/manhole_cards.json")
+      .then(res => res.json())
+      .then(data => setCards(data));
+  }, []);
+
+  // 所持数ダミー（本番はStateやDBで管理！）
+  const total = cards.length;
   const owned = 0;
   const real = 0;
   const percent = total === 0 ? 0 : Math.floor((owned / total) * 100);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-
-      {/* 上部サマリー */}
+      {/* サマリー */}
       <header className="px-4 py-3 bg-white border-b">
         <h1 className="text-lg font-bold text-center mb-2">マンホールカード</h1>
         <div className="flex justify-around items-end mb-2">
@@ -38,7 +53,7 @@ export default function App() {
 
       {/* カードリスト */}
       <main className="flex-1 overflow-y-auto px-2 pb-24 bg-white">
-        {cardsData.map(card => (
+        {cards.map(card => (
           <div
             key={card.id}
             className="flex items-center p-2 border-b hover:bg-gray-50 cursor-pointer"
@@ -58,18 +73,10 @@ export default function App() {
 
       {/* 下部ナビゲーション */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-1 z-50">
-        <button className="flex flex-col items-center text-xs text-gray-700">
-          <span>カード</span>
-        </button>
-        <button className="flex flex-col items-center text-xs text-gray-400">
-          <span>アイテム</span>
-        </button>
-        <button className="flex flex-col items-center text-xs text-gray-400">
-          <span>写真</span>
-        </button>
-        <button className="flex flex-col items-center text-xs text-gray-400">
-          <span>サマリー</span>
-        </button>
+        <button className="flex flex-col items-center text-xs text-gray-700"><span>カード</span></button>
+        <button className="flex flex-col items-center text-xs text-gray-400"><span>アイテム</span></button>
+        <button className="flex flex-col items-center text-xs text-gray-400"><span>写真</span></button>
+        <button className="flex flex-col items-center text-xs text-gray-400"><span>サマリー</span></button>
       </nav>
 
       {/* 詳細モーダル */}
@@ -88,15 +95,6 @@ export default function App() {
             <div className="text-xs text-gray-400 mb-2">{selected.code}</div>
             <div className="text-xs text-gray-600 mb-1">
               緯度: {selected.latitude}, 経度: {selected.longitude}
-            </div>
-            {/* ダミーチェックボックス */}
-            <div className="flex justify-around mt-3">
-              <label>
-                <input type="checkbox" className="mr-1" /> カード
-              </label>
-              <label>
-                <input type="checkbox" className="mr-1" /> 実物
-              </label>
             </div>
           </div>
         </div>
