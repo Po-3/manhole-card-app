@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+// カード1枚の型
 type Card = {
   id: string;
   city: string;
@@ -15,14 +16,14 @@ export default function App() {
   const [cards, setCards] = useState<Card[]>([]);
   const [selected, setSelected] = useState<Card | null>(null);
 
-  // JSONファイルからデータを読む
+  // JSONからデータを読み込む
   useEffect(() => {
     fetch("/manhole_cards.json")
       .then(res => res.json())
       .then(data => setCards(data));
   }, []);
 
-  // 所持数ダミー（本番はStateやDBで管理！）
+  // 今は持ってる数などはダミー
   const total = cards.length;
   const owned = 0;
   const real = 0;
@@ -30,7 +31,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* サマリー */}
+      {/* 画面上のサマリー */}
       <header className="px-4 py-3 bg-white border-b">
         <h1 className="text-lg font-bold text-center mb-2">マンホールカード</h1>
         <div className="flex justify-around items-end mb-2">
@@ -51,7 +52,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* カードリスト */}
+      {/* カード一覧（1枚1行・クリックで詳細） */}
       <main className="flex-1 overflow-y-auto px-2 pb-24 bg-white">
         {cards.map(card => (
           <div
@@ -71,7 +72,7 @@ export default function App() {
         ))}
       </main>
 
-      {/* 下部ナビゲーション */}
+      {/* 下のナビ */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-1 z-50">
         <button className="flex flex-col items-center text-xs text-gray-700"><span>カード</span></button>
         <button className="flex flex-col items-center text-xs text-gray-400"><span>アイテム</span></button>
@@ -79,7 +80,7 @@ export default function App() {
         <button className="flex flex-col items-center text-xs text-gray-400"><span>サマリー</span></button>
       </nav>
 
-      {/* 詳細モーダル */}
+      {/* カードをクリックしたときに出るモーダル */}
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setSelected(null)}>
           <div
