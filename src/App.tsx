@@ -13,9 +13,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// ---- Firestore 操作用ユーティリティをインライン ----
-
-// 所持カードの取得 (cardId の配列を返す)
+// ---- Firestore 操作用ユーティリティ ----
 async function getOwnedCards(): Promise<string[]> {
   const user = getAuth().currentUser;
   if (!user) return [];
@@ -24,8 +22,6 @@ async function getOwnedCards(): Promise<string[]> {
   const snap = await getDocs(col);
   return snap.docs.map(d => d.id);
 }
-
-// カードを所持済みにする
 async function addOwnedCard(cardId: string) {
   const user = getAuth().currentUser;
   if (!user) return;
@@ -33,8 +29,6 @@ async function addOwnedCard(cardId: string) {
   const ref = doc(db, "users", user.uid, "cards", cardId);
   await setDoc(ref, { owned: true });
 }
-
-// カードの所持を削除する
 async function removeOwnedCard(cardId: string) {
   const user = getAuth().currentUser;
   if (!user) return;
@@ -77,7 +71,6 @@ function seriesToVersion(id: string, series: string): VersionType {
 }
 
 export default function App() {
-  // --- Google認証 ---
   const [user, setUser] = useState<User | null>(null);
   useEffect(() => onAuthStateChanged(auth, setUser), []);
 
@@ -299,231 +292,162 @@ export default function App() {
   ).sort();
 
   return (
-<div className="min-h-screen p-4"
-        className="bg-gradient-to-br from-indigo-100 via-pink-100 to-yellow-100">
+    <div className="min-h-screen p-4 bg-gradient-to-br from-indigo-100 via-pink-100 to-yellow-100">
 
-      {/* 認証 */}
-      <div style={{ textAlign: "right", marginBottom: 16 }}>
-        {user ? (
-          <>
-            <span style={{ marginRight: 16 }}>こんにちは、{user.displayName}さん</span>
-            <button onClick={handleLogout}>ログアウト</button>
-          </>
-        ) : (
-          <button onClick={handleLogin}>Googleでログイン</button>
-        )}
+      {/* 認証・タイトル */}
+      <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
+        <h1 className="text-xl font-bold tracking-tight">マンホールカード管理</h1>
+        <div>
+          {user ? (
+            <>
+              <span className="mr-2 text-sm">こんにちは、{user.displayName}さん</span>
+              <button className="bg-gray-700 text-white px-4 py-1 rounded" onClick={handleLogout}>ログアウト</button>
+            </>
+          ) : (
+            <button className="bg-blue-500 text-white px-4 py-1 rounded" onClick={handleLogin}>Googleでログイン</button>
+          )}
+        </div>
       </div>
 
-      <h1>マンホールカード管理</h1>
-
-      {/* 進捗バー */}
-      <div
-        style={{
-          margin: "16px 0",
-          padding: 10,
-          background: "#f8f9fa",
-          borderRadius: 10,
-          boxShadow: "0 1px 4px #0001",
-          display: "flex",
-          alignItems: "center",
-          gap: 24
-        }}
-      >
-        <span>
-          所持 {ownedCount} / {total}
-          <button style={{ marginLeft: 12 }} onClick={handleEdit}>
+      {/* 進捗バー&CSV */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="font-medium text-sm">
+          所持 <b>{ownedCount}</b> / {total}
+          <button className="ml-2 bg-gray-200 px-2 py-0.5 rounded text-xs" onClick={handleEdit}>
             TOTAL編集
           </button>
         </span>
-        <div
-          style={{
-            flex: 1,
-            marginLeft: 20,
-            background: "#ddd",
-            borderRadius: 10,
-            height: 16,
-            position: "relative"
-          }}
-        >
+        <div className="flex-1 min-w-[120px] bg-gray-200 rounded h-4 relative overflow-hidden mx-2">
           <div
-            style={{
-              width: percent + "%",
-              height: "100%",
-              background: "linear-gradient(90deg, #4caf50 50%, #c8e6c9 100%)",
-              borderRadius: 10,
-              transition: "width .3s"
-            }}
+            className="bg-green-400 rounded h-4 transition-all"
+            style={{ width: percent + "%" }}
           />
-          <span
-            style={{
-              position: "absolute",
-              right: 10,
-              top: 0,
-              fontWeight: "bold",
-              color: "#333"
-            }}
-          >
-            {percent}%
-          </span>
+          <span className="absolute right-2 top-0 text-xs font-bold text-gray-800">{percent}%</span>
         </div>
-        <button onClick={exportCSV}>CSV出力</button>
-        <input
-          type="file"
-          accept=".csv"
-          onChange={importCSV}
-          style={{ marginLeft: 10 }}
-        />
+        <button className="bg-gray-700 text-white px-3 py-1 rounded text-xs" onClick={exportCSV}>CSV出力</button>
+        <input type="file" accept=".csv" onChange={importCSV} className="ml-2 text-xs" />
       </div>
 
       {/* TOTAL編集モーダル */}
       {totalEdit && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-          onClick={resetTotal}
-        >
-          <div
-            style={{ background: "#fff", borderRadius: 12, padding: 30, minWidth: 260 }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h3>TOTAL枚数を編集</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50" onClick={resetTotal}>
+          <div className="bg-white rounded-lg p-6 min-w-[220px]" onClick={e => e.stopPropagation()}>
+            <h3 className="mb-3 font-bold">TOTAL枚数を編集</h3>
             <input
               type="number"
               defaultValue={total}
               min={1}
-              style={{ width: "80px", fontSize: 18, marginRight: 12 }}
+              className="w-20 p-1 border border-gray-300 rounded mr-2"
               onBlur={e => saveTotal(Number(e.target.value))}
               autoFocus
             />
-            <button style={{ marginLeft: 10 }} onClick={resetTotal}>
+            <button className="bg-gray-300 px-2 py-1 rounded text-xs" onClick={resetTotal}>
               リセット
             </button>
           </div>
         </div>
       )}
 
-      {/* 検索・フィルター */}
-      <div style={{ display: "flex", gap: 12, margin: "16px 0" }}>
+      {/* 検索・フィルター（縦並び&ラップ対応） */}
+      <div className="flex flex-wrap gap-2 mb-4 sm:flex-col">
         <input
           type="search"
-          value={search} 
+          value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="市町村名、都道府県、No.で検索"
-          style={{ width: 180, fontSize: 16 }}
+          className="w-44 sm:w-full px-2 py-1 rounded border border-gray-300"
         />
-        <select value={filterPref} onChange={e => setFilterPref(e.target.value)} style={{ fontSize: 16 }}>
+        <select value={filterPref} onChange={e => setFilterPref(e.target.value)} className="w-32 sm:w-full px-2 py-1 rounded border border-gray-300">
           <option value="ALL">都道府県すべて</option>
           {prefs.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-        <select value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ fontSize: 16 }}>
+        <select value={filterCity} onChange={e => setFilterCity(e.target.value)} className="w-32 sm:w-full px-2 py-1 rounded border border-gray-300">
           <option value="ALL">市町村すべて</option>
           {cities.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={filterVer} onChange={e => setFilterVer(e.target.value as any)} style={{ fontSize: 16 }}>
+        <select value={filterVer} onChange={e => setFilterVer(e.target.value as any)} className="w-28 sm:w-full px-2 py-1 rounded border border-gray-300">
           <option value="ALL">バージョン全て</option>
           {versionLabels.map(v => <option key={v} value={v}>{v}</option>)}
         </select>
-        <select value={filterOwned} onChange={e => setFilterOwned(e.target.value as any)} style={{ fontSize: 16 }}>
+        <select value={filterOwned} onChange={e => setFilterOwned(e.target.value as any)} className="w-36 sm:w-full px-2 py-1 rounded border border-gray-300">
           <option value="ALL">所持/未所持すべて</option>
           <option value="OWNED">所持あり</option>
           <option value="NOTOWNED">未所持のみ</option>
         </select>
       </div>
 
-{/* 一覧テーブル */}
-+      <div className="overflow-x-auto w-full">
-+        <table className="min-w-full table-auto border-collapse">
-          <thead>
-            <tr>
-              <th>画像</th>
-              <th>市町村</th>
-              <th>No.</th>
-              {versionLabels.map(label => <th key={label}>{label}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {showList.map((g, i) => (
-              <tr key={`${g.city}-${g.no}`}>
-                {/* ・・・ */}
-              </tr>
-            ))}
-          </tbody>
-          </table>
-           </div>
+      {/* 一覧テーブル（横スクロール可） */}
+<div className="card-list">
+  {showList.map((g, i) => (
+    <div className="card-box" key={`${g.city}-${g.no}`}>
+      <img
+        className="card-img"
+        src={g.versions[0].imageUrl}
+        alt="サムネイル"
+        onClick={() => setModalUrl(g.versions[0].imageUrl)}
+      />
+      <div className="card-info">
+        <b>{g.city}</b>
+        <span>{g.prefecture}</span>
+        <span>No: {g.no}</span>
+      </div>
+      <div className="check-row">
+        {versionLabels.map(label =>
+          g.versions.some(v => v.version === label) ? (
+            <label key={label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <input
+                className="custom-check"
+                type="checkbox"
+                checked={!!g.owned[label]}
+                onChange={() => toggle((page - 1) * pageSize + i, label)}
+              />
+              <span>{label}</span>
+            </label>
+          ) : null
+        )}
+      </div>
+    </div>
+  ))}
+</div>
 
       {/* ページネーション */}
-      <div style={{ margin: "24px 0", textAlign: "center" }}>
+      <div className="mt-5 mb-1 flex flex-wrap justify-center gap-1">
         {Array.from({ length: pageMax }, (_, i) => i + 1).map(pn => (
           <button
             key={pn}
             onClick={() => setPage(pn)}
-            style={{
-              fontWeight: page === pn ? "bold" : undefined,
-              margin: "0 2px",
-              padding: "2px 10px",
-              borderRadius: 6
-            }}
+            className={`px-3 py-1 rounded border text-xs ${page === pn ? "bg-indigo-400 text-white font-bold" : "bg-white border-gray-300 text-gray-700"}`}
           >
             {pn}
           </button>
         ))}
       </div>
 
-      <p style={{ color: "#777" }}>
+      <p className="text-xs text-gray-500 mb-2">
         （{filtered.length}件中 {showList.length}件表示／サムネイルクリックで拡大）
       </p>
 
       {/* 画像拡大モーダル */}
       {modalUrl && (
         <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.65)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999
-          }}
+          className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
           onClick={() => setModalUrl(null)}
         >
           <img
             src={modalUrl}
             alt="拡大画像"
-            style={{
-              maxWidth: "80vw",
-              maxHeight: "80vh",
-              boxShadow: "0 2px 16px rgba(0,0,0,0.7)",
-              background: "#fff",
-              borderRadius: 8,
-              padding: 8
-            }}
+            className="max-w-[90vw] max-h-[80vh] shadow-2xl bg-white rounded-lg p-2"
             onClick={e => e.stopPropagation()}
           />
           <button
             onClick={() => setModalUrl(null)}
-            style={{
-              position: "fixed",
-              top: 30,
-              right: 30,
-              fontSize: 30,
-              color: "#fff",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer"
-            }}
+            className="absolute top-5 right-5 text-3xl font-bold text-white bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center"
           >
             ×
           </button>
         </div>
       )}
+
     </div>
   );
 }
