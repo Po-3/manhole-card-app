@@ -67,10 +67,10 @@ export default function App() {
   const ownedCount = owned.size;
   const coordCount = coord.size;
   const percent = total ? Math.round((ownedCount / total) * 100) : 0;
-  const percentCoord = total ? Math.round((coordCount / total) * 100) : 0;
+  // const percentCoord = total ? Math.round((coordCount / total) * 100) : 0; // ←使わないなら消す
 
-  // チェック処理
-  const toggle = (id: string, current: Set<string>, setter: any) => {
+  // チェック処理（不要な引数を消す！）
+  const toggle = (id: string, setter: any) => {
     setter((prev: Set<string>) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -85,7 +85,7 @@ export default function App() {
   const mapUrl = (lat: number, lng: number) =>
     `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=400x160&markers=color:orange%7C${lat},${lng}&key=YOUR_API_KEY`;
 
-  // GKPサイトリンク（仮/パターン調整）
+  // GKPサイトリンク
   const gkpLink = (card: Card) =>
     `https://www.gkpm.jp/manhole_card/detail/?city_code=${card.jisCode}&product_number=${card.productNumber}`;
 
@@ -175,11 +175,11 @@ export default function App() {
                 <div className="text-xs text-gray-500">座標: {filtered[popupIdx].latitude}, {filtered[popupIdx].longitude}</div>
                 <div className="flex gap-2 mt-2">
                   <label className="flex items-center text-xs font-bold text-blue-500">
-                    <input type="checkbox" checked={owned.has(filtered[popupIdx].id)} onChange={() => toggle(filtered[popupIdx].id, owned, setOwned)} />
+                    <input type="checkbox" checked={owned.has(filtered[popupIdx].id)} onChange={() => toggle(filtered[popupIdx].id, setOwned)} />
                     所有
                   </label>
                   <label className="flex items-center text-xs font-bold text-green-500">
-                    <input type="checkbox" checked={coord.has(filtered[popupIdx].id)} onChange={() => toggle(filtered[popupIdx].id, coord, setCoord)} />
+                    <input type="checkbox" checked={coord.has(filtered[popupIdx].id)} onChange={() => toggle(filtered[popupIdx].id, setCoord)} />
                     座標蓋
                   </label>
                 </div>
