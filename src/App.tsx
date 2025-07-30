@@ -338,7 +338,7 @@ export default function App() {
       <img
         src={g.versions[0].imageUrl}
         alt={`${g.city} サムネイル`}
-        className="w-8 h-11 object-contain rounded border mb-1 cursor-pointer"
+  className="w-9 h-12 object-contain rounded border mb-1 cursor-pointer"
         onClick={() => setModalUrl(g.versions[0].imageUrl)}
       />
       <div className="text-center w-full mb-0.5">
