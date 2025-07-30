@@ -1,220 +1,214 @@
-// src/App.tsx
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import "./index.css";
 
 // --- 型定義 ---
-type CardType = "通常" | "特別" | "英語" | "その他";
 type Card = {
   id: string;
   series: string;
   imageUrl: string;
   prefecture: string;
   city: string;
-  jisCode: string;
-  productNumber: string;
+  type: string; // 例: "通常", "特別", "英語", "その他"
   latitude: number;
   longitude: number;
-  details: string;
-  genres: string[];
   distributionPlace: string;
-  type: CardType;
-  // option: ユーザー撮影座標・撮影写真へのパス・メモも拡張可能
 };
 
-const TABS = ["カード", "進捗", "地図", "写真"];
-const CARD_TYPES: CardType[] = ["通常", "特別", "英語", "その他"];
+const TABS = ["カード", "進捗", "地図", "写真", "設定"];
 
 export default function App() {
   const [cards, setCards] = useState<Card[]>([]);
   const [owned, setOwned] = useState<Set<string>>(new Set());
-  const [shot, setShot] = useState<Set<string>>(new Set()); // 実物（座標豚）撮影
+  const [coord, setCoord] = useState<Set<string>>(new Set());
+  const [favorite, setFavorite] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<number | null>(null);
   const [tab, setTab] = useState(TABS[0]);
-
-  // --- 絞り込み ---
-  const [filterPref, setFilterPref] = useState("");
-  const [filterSeries, setFilterSeries] = useState("");
-  const [filterType, setFilterType] = useState<CardType | "">("");
-  const [filterStatus, setFilterStatus] = useState<"all"|"owned"|"unowned">("all");
-  const [filterShot, setFilterShot] = useState<"all"|"shot"|"unshot">("all");
   const [search, setSearch] = useState("");
+  const [filterPref, setFilterPref] = useState("全て");
+  const [filterSeries, setFilterSeries] = useState("全て");
+  const [filterType, setFilterType] = useState("全て");
 
-  // --- データ読込 ---
+  // --- データロード ---
   useEffect(() => {
     fetch("/manhole_cards.json")
       .then(res => res.json())
-      .then((data: Card[]) => setCards(data));
+      .then(data => setCards(data));
   }, []);
 
-  // --- マスター抽出 ---
-  const allPrefs = Array.from(new Set(cards.map(c => c.prefecture))).filter(x => x);
-  const allSeries = Array.from(new Set(cards.map(c => c.series))).filter(x => x);
+  // --- 動的プルダウン用 ---
+  const allPrefs = ["全て", ...Array.from(new Set(cards.map(c => c.prefecture).filter(Boolean)))];
+  const allSeries = ["全て", ...Array.from(new Set(cards.map(c => c.series).filter(Boolean)))];
+  const allTypes = ["全て", ...Array.from(new Set(cards.map(c => c.type || "通常").filter(Boolean)))];
 
-  // --- 絞り込み ---
-  const filtered = cards.filter(card =>
-    (!filterPref || card.prefecture === filterPref) &&
-    (!filterSeries || card.series === filterSeries) &&
-    (!filterType || card.type === filterType) &&
-    (filterStatus === "all" || (filterStatus === "owned" ? owned.has(card.id) : !owned.has(card.id))) &&
-    (filterShot === "all" || (filterShot === "shot" ? shot.has(card.id) : !shot.has(card.id))) &&
-    (!search || (card.city + card.id + card.details + card.distributionPlace).toLowerCase().includes(search.toLowerCase()))
+  // --- フィルタ適用 ---
+  const filteredCards = cards.filter(card =>
+    (filterPref === "全て" || card.prefecture === filterPref) &&
+    (filterSeries === "全て" || card.series === filterSeries) &&
+    (filterType === "全て" || (card.type || "通常") === filterType) &&
+    (!search || card.city.includes(search) || card.id.includes(search) || (card.distributionPlace || "").includes(search))
   );
 
   // --- 進捗 ---
   const total = cards.length;
   const ownedCount = owned.size;
-  const shotCount = shot.size;
-  const percent = total ? Math.round((ownedCount / total) * 100) : 0;
-  const percentShot = total ? Math.round((shotCount / total) * 100) : 0;
+  const coordCount = coord.size;
+  const percentOwned = total ? Math.round((ownedCount / total) * 100) : 0;
+  const percentCoord = total ? Math.round((coordCount / total) * 100) : 0;
 
-  // --- 所持・撮影チェック操作 ---
-  const toggleOwned = (id: string) => setOwned(prev => {
-    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
-  });
-  const toggleShot = (id: string) => setShot(prev => {
-    const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next;
-  });
+  // --- 状態トグル ---
+  const toggleOwned = (id: string) => setOwned(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleCoord = (id: string) => setCoord(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const toggleFavorite = (id: string) => setFavorite(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
-  // --- 前後カード ---
-  const prevCard = () => setSelected(i => (i !== null && i > 0 ? i - 1 : i));
-  const nextCard = () => setSelected(i => (i !== null && i < filtered.length - 1 ? i + 1 : i));
+  // --- 詳細カード切替 ---
+  const prevCard = () => setSelected(i => (i && i > 0 ? i - 1 : 0));
+  const nextCard = () => setSelected(i => (i !== null && i < filteredCards.length - 1 ? i + 1 : i));
 
-  // --- カードタイプカラー ---
-  const typeColor = (type: CardType | "") => {
-    switch (type) {
-      case "特別": return "bg-yellow-200 text-yellow-800";
-      case "英語": return "bg-blue-200 text-blue-800";
-      case "その他": return "bg-gray-200 text-gray-700";
-      default: return "bg-green-100 text-green-700";
-    }
-  };
-
+  // --- メインUI ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#fff4fa] flex flex-col pb-16 w-full max-w-[540px] mx-auto">
-      {/* タブ */}
-      <nav className="tab-nav">
+    <div id="root" className="max-w-[600px] mx-auto p-2 bg-gradient-to-br from-[#f7fafc] to-[#fff4fa] min-h-screen">
+      {/* タブナビ */}
+      <nav className="tab-nav mb-1">
         {TABS.map(t => (
-          <button key={t} className={`tab-button${tab === t ? " active" : ""}`} onClick={() => setTab(t)}>{t}</button>
+          <button key={t} onClick={() => setTab(t)} className={`tab-button${tab === t ? " active" : ""}`}>{t}</button>
         ))}
       </nav>
 
-      {/* --- サマリー＆フィルター --- */}
+      {/* サマリー/進捗 */}
       {tab === "カード" && (
-        <>
-          {/* 進捗バー */}
-          <div className="flex flex-col gap-2 px-3 py-2">
-            <div className="flex justify-between">
-              <div className="font-bold">所有: <span className="text-green-700">{ownedCount}</span> / {total} <span className="ml-2 text-gray-500 text-xs">({percent}%)</span></div>
-              <div className="font-bold">座標豚: <span className="text-blue-700">{shotCount}</span> <span className="text-xs text-gray-500">({percentShot}%)</span></div>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-bar-inner" style={{ width: `${percent}%` }} />
-            </div>
-            <div className="progress-bar bg-blue-100 mt-0">
-              <div className="progress-bar-inner" style={{ background: "linear-gradient(90deg, #00c3ff 70%, #ffff1c 100%)", width: `${percentShot}%` }} />
-            </div>
+        <div className="flex flex-col gap-1 mb-2">
+          <div className="flex justify-between items-end text-sm px-1">
+            <span>所有: <b>{ownedCount}</b> / {total}（<b>{percentOwned}%</b>）</span>
+            <span>座標豚: <b>{coordCount}</b>（<b>{percentCoord}%</b>）</span>
           </div>
-
-          {/* 絞り込み */}
-          <div className="flex flex-wrap gap-2 items-center px-2 py-2 mb-2">
-            <select value={filterPref} onChange={e => setFilterPref(e.target.value)}><option value="">都道府県</option>{allPrefs.map(pref => <option key={pref}>{pref}</option>)}</select>
-            <select value={filterSeries} onChange={e => setFilterSeries(e.target.value)}><option value="">弾（シリーズ）</option>{allSeries.map(series => <option key={series}>{series}</option>)}</select>
-            <select value={filterType} onChange={e => setFilterType(e.target.value as CardType | "")}><option value="">カードタイプ</option>{CARD_TYPES.map(tp => <option key={tp}>{tp}</option>)}</select>
-            <select value={filterStatus} onChange={e => setFilterStatus(e.target.value as any)}><option value="all">全て</option><option value="owned">所持のみ</option><option value="unowned">未所持のみ</option></select>
-            <select value={filterShot} onChange={e => setFilterShot(e.target.value as any)}><option value="all">全て</option><option value="shot">撮影済み</option><option value="unshot">未撮影</option></select>
-            <input type="search" placeholder="市区町村・番号" value={search} onChange={e => setSearch(e.target.value)} className="w-[110px]"/>
+          <div className="progress-bar">
+            <div className="progress-bar-inner" style={{ width: `${percentOwned}%` }} />
           </div>
-        </>
+          <div className="progress-bar" style={{ background: "#fbd786" }}>
+            <div className="progress-bar-inner" style={{ width: `${percentCoord}%`, background: "#ffb700" }} />
+          </div>
+        </div>
       )}
 
-      {/* --- カードリスト --- */}
+      {/* 絞り込み */}
       {tab === "カード" && (
-        <main className="flex-1 overflow-y-auto px-1 pb-20 bg-white">
-          {filtered.length === 0 && <div className="text-center text-gray-400 py-12">該当カードがありません</div>}
-          {filtered.map((card, i) => (
-            <div key={card.id} className="flex items-center border-b py-2 px-1 hover:bg-gray-50 cursor-pointer transition w-full" onClick={() => setSelected(i)}>
-              {/* サムネイル */}
-              <img src={card.imageUrl} alt="" className="w-16 h-22 object-contain rounded bg-gray-100 border mr-2 flex-shrink-0" style={{ width: 58, height: 80 }} />
-              {/* 情報 */}
-              <div className="flex-1 min-w-0">
-                <div className="flex gap-2 items-center">
-                  <span className="font-semibold text-sm truncate">{card.city}</span>
-                  <span className={`text-xs px-2 py-0.5 ml-1 rounded-full ${typeColor(card.type)}`}>{card.type}</span>
-                </div>
-                <div className="text-xs text-gray-500 truncate">{card.distributionPlace}</div>
-                <div className="text-xs text-gray-400">{card.id}</div>
+        <div className="flex flex-wrap gap-2 mb-2">
+          <select value={filterPref} onChange={e => setFilterPref(e.target.value)}>
+            {allPrefs.map(p => <option key={p}>{p}</option>)}
+          </select>
+          <select value={filterSeries} onChange={e => setFilterSeries(e.target.value)}>
+            {allSeries.map(s => <option key={s}>{s}</option>)}
+          </select>
+          <select value={filterType} onChange={e => setFilterType(e.target.value)}>
+            {allTypes.map(t => <option key={t}>{t}</option>)}
+          </select>
+          <input
+            type="search"
+            className="flex-1 min-w-[60px]"
+            placeholder="市区町村/番号/住所"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+      )}
+
+      {/* カードリスト */}
+      {tab === "カード" && (
+        <main className="card-list flex flex-col gap-2">
+          {filteredCards.map((card, i) => (
+            <div className="card-box flex items-center rounded bg-white shadow-sm px-2 py-1" key={card.id}>
+              <img src={card.imageUrl} className="card-img mr-2 cursor-pointer" alt="" onClick={() => setSelected(i)} />
+              <div className="card-info flex-1 min-w-0" onClick={() => setSelected(i)}>
+                <b className="text-sm">{card.city}</b>
+                <span className="text-xs text-gray-500 ml-2">{card.series}</span>
+                <span className="block text-xs">{card.id}</span>
+                <span className="block text-xs text-gray-500 truncate">{card.distributionPlace}</span>
+                <span className="block text-xs text-gray-400">{card.type || "通常"}</span>
               </div>
-              {/* チェック */}
-              <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
-                <label className="flex items-center text-xs font-bold text-green-700">
-                  <input type="checkbox" checked={owned.has(card.id)} onChange={e => {e.stopPropagation(); toggleOwned(card.id);}} onClick={e => e.stopPropagation()} />
+              <div className="flex flex-col items-end gap-1 ml-2">
+                <label className="flex items-center text-xs font-bold text-blue-500">
+                  <input type="checkbox" checked={owned.has(card.id)} onChange={() => toggleOwned(card.id)} />
                   所持
                 </label>
-                <label className="flex items-center text-xs font-bold text-blue-700">
-                  <input type="checkbox" checked={shot.has(card.id)} onChange={e => {e.stopPropagation(); toggleShot(card.id);}} onClick={e => e.stopPropagation()} />
+                <label className="flex items-center text-xs font-bold text-yellow-600">
+                  <input type="checkbox" checked={coord.has(card.id)} onChange={() => toggleCoord(card.id)} />
                   座標豚
                 </label>
+                <button onClick={() => toggleFavorite(card.id)} className="text-xl mt-1">{favorite.has(card.id) ? "★" : "☆"}</button>
               </div>
             </div>
           ))}
         </main>
       )}
 
-      {/* --- 詳細ポップアップ --- */}
-      {selected !== null && filtered[selected] && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setSelected(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-4 w-[97vw] max-w-md mx-2 relative animate-fadeIn" onClick={e => e.stopPropagation()}>
-            <button className="absolute top-2 right-3 text-3xl text-gray-400 font-bold" onClick={() => setSelected(null)}>&times;</button>
-            <button className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-100 hover:bg-blue-100 text-xl px-2 py-1 rounded-full shadow" disabled={selected === 0} onClick={prevCard}>◀</button>
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-100 hover:bg-blue-100 text-xl px-2 py-1 rounded-full shadow" disabled={selected === filtered.length - 1} onClick={nextCard}>▶</button>
-            <div className="flex gap-4 flex-row items-start mb-2">
-              {/* 画像 */}
-              <img src={filtered[selected].imageUrl} alt="" className="w-28 h-36 object-contain rounded-lg border shadow" />
-              <div className="flex-1 flex flex-col gap-1 min-w-0">
-                <div className={`text-xs font-bold rounded px-2 py-1 inline-block mb-1 ${typeColor(filtered[selected].type)}`}>{filtered[selected].series} / {filtered[selected].type}</div>
-                <div className="font-bold text-lg">{filtered[selected].city}</div>
-                <div className="text-xs text-gray-500">{filtered[selected].id}</div>
-                <div className="text-xs text-gray-700 mb-1 truncate">{filtered[selected].distributionPlace}</div>
-                <div className="text-xs text-gray-500">{filtered[selected].details}</div>
-                <div className="text-[11px] text-gray-400">緯度: {filtered[selected].latitude}／経度: {filtered[selected].longitude}</div>
-                <div className="flex gap-4 mt-2">
-                  <label className="flex items-center text-xs font-bold text-green-700">
-                    <input type="checkbox" checked={owned.has(filtered[selected].id)} onChange={() => toggleOwned(filtered[selected].id)} />
+      {/* 他タブ：進捗・地図・写真・設定 */}
+      {tab === "進捗" && (
+        <main className="py-8 text-center text-xl text-blue-600 font-bold">
+          {/* グラフやバッジ表示、ランキングなども追加可能 */}
+          <div className="mb-3">進捗グラフや獲得バッジはここに！</div>
+          <div>所持: {ownedCount} / {total} ({percentOwned}%)<br />座標豚: {coordCount} ({percentCoord}%)</div>
+        </main>
+      )}
+      {tab === "地図" && (
+        <main className="py-8 text-center text-xl text-blue-600 font-bold">
+          <div className="mb-2">Google/OSM地図でピン表示！</div>
+          <div className="text-xs text-gray-500">（実装例略。Google StaticMap, OSM API連携で簡単に実装可）</div>
+        </main>
+      )}
+      {tab === "写真" && (
+        <main className="py-8 text-center text-lg text-gray-600 font-bold">
+          座標豚カードの写真アルバム（カメラ/アップロード機能追加可）
+        </main>
+      )}
+      {tab === "設定" && (
+        <main className="py-8 text-center text-lg text-gray-700 font-bold">
+          テーマ・バックアップ・インポート・エクスポート機能（カスタム実装例）
+        </main>
+      )}
+
+      {/* カード詳細ポップアップ */}
+      {selected !== null && (
+        <div className="modal-bg" onClick={() => setSelected(null)}>
+          <div className="modal-box bg-white rounded-xl shadow-xl p-5 w-[98vw] max-w-xl mx-auto relative" onClick={e => e.stopPropagation()}>
+            <button className="modal-close absolute top-2 right-3 text-3xl text-gray-400" onClick={() => setSelected(null)}>×</button>
+            {/* 前後カード */}
+            <button className="absolute left-1 top-1/2 -translate-y-1/2 bg-gray-200 text-xl rounded-full px-3 py-1 shadow" onClick={prevCard} disabled={selected === 0}>◀</button>
+            <button className="absolute right-1 top-1/2 -translate-y-1/2 bg-gray-200 text-xl rounded-full px-3 py-1 shadow" onClick={nextCard} disabled={selected === filteredCards.length - 1}>▶</button>
+            <div className="flex gap-3 items-start">
+              <img src={filteredCards[selected].imageUrl} className="w-28 h-40 object-contain rounded-lg border" alt="" />
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-bold text-white bg-green-600 rounded px-2 py-1 inline-block mb-1">{filteredCards[selected].series}</div>
+                <div className="font-bold text-lg">{filteredCards[selected].city}</div>
+                <div className="text-xs text-gray-500">{filteredCards[selected].id}</div>
+                <div className="text-xs text-gray-700 mb-1 truncate">{filteredCards[selected].distributionPlace}</div>
+                <div className="text-xs text-gray-500">{filteredCards[selected].type || "通常"}</div>
+                <div className="text-xs text-gray-400">緯度: {filteredCards[selected].latitude} ／ 経度: {filteredCards[selected].longitude}</div>
+                <div className="flex gap-3 mt-2">
+                  <label className="flex items-center text-xs font-bold text-blue-500">
+                    <input type="checkbox" checked={owned.has(filteredCards[selected].id)} onChange={() => toggleOwned(filteredCards[selected].id)} />
                     所持
                   </label>
-                  <label className="flex items-center text-xs font-bold text-blue-700">
-                    <input type="checkbox" checked={shot.has(filtered[selected].id)} onChange={() => toggleShot(filtered[selected].id)} />
+                  <label className="flex items-center text-xs font-bold text-yellow-600">
+                    <input type="checkbox" checked={coord.has(filteredCards[selected].id)} onChange={() => toggleCoord(filteredCards[selected].id)} />
                     座標豚
                   </label>
+                  <button onClick={() => toggleFavorite(filteredCards[selected].id)} className="text-lg">{favorite.has(filteredCards[selected].id) ? "★お気に入り" : "☆"}</button>
                 </div>
               </div>
             </div>
-            {/* 地図 */}
-            <div className="my-2">
+            {/* 地図サムネ */}
+            <div className="mt-3">
               <img
-                src={`https://maps.googleapis.com/maps/api/staticmap?center=${filtered[selected].latitude},${filtered[selected].longitude}&zoom=14&size=320x110&markers=color:green%7C${filtered[selected].latitude},${filtered[selected].longitude}&key=YOUR_API_KEY`}
-                alt="地図"
-                className="rounded-lg w-full object-cover mb-1"
-                style={{ minWidth: "240px" }}
+                src={`https://maps.googleapis.com/maps/api/staticmap?center=${filteredCards[selected].latitude},${filteredCards[selected].longitude}&zoom=14&size=340x120&markers=color:red|${filteredCards[selected].latitude},${filteredCards[selected].longitude}&key=YOUR_GOOGLE_MAPS_KEY`}
+                className="rounded shadow"
+                alt="map"
                 onError={e => ((e.target as HTMLImageElement).src = "/samplemap.jpg")}
               />
-              <div className="text-[11px] text-gray-500 text-center">{filtered[selected].prefecture} {filtered[selected].city}</div>
             </div>
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 px-3 py-2 rounded mb-1 text-xs text-gray-700">
-              <span className="font-bold text-yellow-700 mr-1">!</span>
-              配布停止・場所変更に注意。<a href="https://www.gkpm.jp/" target="_blank" className="underline text-blue-700">公式で最新状況確認</a>
-            </div>
+            <div className="mt-2 text-xs text-gray-500 text-center">※配布状況は事前にご確認を！</div>
           </div>
         </div>
       )}
-
-      {/* --- 下部ナビ --- */}
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white flex justify-around items-center py-2 z-50 max-w-[540px] mx-auto">
-        {TABS.map(t => (
-          <button key={t} className={`flex flex-col items-center text-xs ${tab === t ? "text-blue-700 font-bold" : "text-gray-400"}`} onClick={() => setTab(t)}>
-            <span>{t}</span>
-          </button>
-        ))}
-      </nav>
     </div>
   );
 }
