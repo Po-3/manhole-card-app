@@ -329,43 +329,43 @@ export default function App() {
         </div>
 
         {/* カード一覧グリッド */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-          {showList.map((g, i) => (
-            <div key={`${g.city}-${g.no}`}
-              className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all flex flex-col items-center pb-3 pt-3 px-2 border border-[#e1e4ed] hover:-translate-y-1"
-            >
-              {/* 画像（クリックで拡大） */}
-<img
-  src={g.versions[0].imageUrl}
-  alt={`${g.city} サムネイル`}
-  className="w-10 h-14 object-contain rounded-md mb-1 cursor-pointer border"
-  onClick={() => setModalUrl(g.versions[0].imageUrl)}
-/>
-              {/* 市町村・都道府県・No */}
-              <div className="text-center w-full mb-1">
-                <div className="font-semibold text-sm truncate">{g.city}</div>
-                <div className="text-xs text-gray-500 truncate">{g.prefecture}</div>
-                <div className="text-xs text-gray-400">{g.no}</div>
-              </div>
-              {/* バージョンごとチェック */}
-              <div className="flex justify-center gap-2">
-                {versionLabels.map(label =>
-                  g.versions.some(v => v.version === label) ? (
-                    <label key={label} className="flex items-center gap-1 text-xs font-medium">
-                      <input
-                        type="checkbox"
-                        className="accent-blue-400"
-                        checked={!!g.owned[label]}
-                        onChange={() => toggle((page - 1) * pageSize + i, label)}
-                      />
-                      <span>{label}</span>
-                    </label>
-                  ) : null
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+  {showList.map((g, i) => (
+    <div key={`${g.city}-${g.no}`}
+      className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all flex flex-col items-center pb-3 pt-3 px-2 border border-[#e1e4ed] hover:-translate-y-1"
+    >
+      {/* サムネイル画像（小さく！） */}
+      <img
+        src={g.versions[0].imageUrl}
+        alt={`${g.city} サムネイル`}
+        className="w-10 h-14 object-contain rounded-md mb-1 cursor-pointer border"
+        onClick={() => setModalUrl(g.versions[0].imageUrl)}
+      />
+      {/* 市町村・都道府県・No */}
+      <div className="text-center w-full mb-1">
+        <div className="font-semibold text-xs truncate">{g.city}</div>
+        <div className="text-[10px] text-gray-500 truncate">{g.prefecture}</div>
+        <div className="text-[10px] text-gray-400">{g.no}</div>
+      </div>
+      {/* バージョンごとチェック */}
+      <div className="flex justify-center gap-2">
+        {versionLabels.map(label =>
+          g.versions.some(v => v.version === label) ? (
+            <label key={label} className="flex items-center gap-1 text-[10px] font-medium">
+              <input
+                type="checkbox"
+                className="accent-blue-400"
+                checked={!!g.owned[label]}
+                onChange={() => toggle((page - 1) * pageSize + i, label)}
+              />
+              <span>{label}</span>
+            </label>
+          ) : null
+        )}
+      </div>
+    </div>
+  ))}
+</div>
 
         {/* ページネーション */}
         <div className="mt-5 mb-1 flex flex-wrap justify-center gap-1">
