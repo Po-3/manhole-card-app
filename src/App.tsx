@@ -1,13 +1,12 @@
-import { useState, useEffect } from "react";
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import React, { useEffect, useState } from "react";
 
+// マンホールカード型定義（データ形式に合わせて調整！）
 type Card = {
   id: string;
   series: string;
   imageUrl: string;
   prefecture: string;
   city: string;
-  jisCode: string;
   productNumber: string;
   latitude: number;
   longitude: number;
@@ -15,26 +14,33 @@ type Card = {
   distributionPlace: string;
 };
 
+// ボトムナビ用
+const NAVS = [
+  { key: "cards", label: "カード", icon: "💳" },
+  { key: "items", label: "アイテム", icon: "🎒" },
+  { key: "photos", label: "写真", icon: "📷" },
+  { key: "summary", label: "サマリー", icon: "📊" }
+];
+
 export default function App() {
   const [cards, setCards] = useState<Card[]>([]);
+  const [selected, setSelected] = useState<Card | null>(null);
   const [owned, setOwned] = useState<Set<string>>(new Set());
   const [real, setReal] = useState<Set<string>>(new Set());
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [selected, setSelected] = useState<Card | null>(null);
+  const [nav, setNav] = useState("cards");
+  const [search, setSearch] = useState("");
 
-  // データ読み込み＋localStorage復元
+  // データ取得
   useEffect(() => {
     fetch("/manhole_cards.json")
       .then(res => res.json())
-      .then(data => setCards(data));
-
-    const o = localStorage.getItem("owned");
-    if (o) setOwned(new Set(JSON.parse(o)));
-    const r = localStorage.getItem("real");
-    if (r) setReal(new Set(JSON.parse(r)));
+      .then(setCards);
+    // 所持情報はlocalStorage
+    setOwned(new Set(JSON.parse(localStorage.getItem("owned") || "[]")));
+    setReal(new Set(JSON.parse(localStorage.getItem("real") || "[]")));
   }, []);
 
-  // localStorage 保存
+  // 所持/実物 保存
   useEffect(() => {
     localStorage.setItem("owned", JSON.stringify(Array.from(owned)));
   }, [owned]);
@@ -42,190 +48,202 @@ export default function App() {
     localStorage.setItem("real", JSON.stringify(Array.from(real)));
   }, [real]);
 
+  // 検索・フィルタ
+  const filteredCards = cards.filter(card =>
+    !search ||
+    card.city.includes(search) ||
+    card.prefecture.includes(search) ||
+    card.series.includes(search)
+  );
+
+  // 進捗計算
   const total = cards.length;
   const ownedCount = owned.size;
   const realCount = real.size;
-  const percentOwned = total ? Math.round((ownedCount / total) * 100) : 0;
-  const percentReal = total ? Math.round((realCount / total) * 100) : 0;
+  const percent = total === 0 ? 0 : Math.round((ownedCount / total) * 100);
+  const percentReal = total === 0 ? 0 : Math.round((realCount / total) * 100);
 
-  // 都道府県でグループ化
-  const byPref = cards.reduce<Record<string, Card[]>>((acc, c) => {
-    const key = c.prefecture || "全国";
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(c);
-    return acc;
-  }, {});
+  // 所持トグル
+  const toggleOwned = (id: string) => {
+    setOwned(o => {
+      const next = new Set(o);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const toggleReal = (id: string) => {
+    setReal(r => {
+      const next = new Set(r);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] to-[#fff0fa] flex flex-col pb-16">
       {/* ヘッダー */}
-      <header className="flex items-center justify-between px-4 py-2 bg-white shadow">
-        <div className="flex items-center space-x-4">
-          <span className="text-2xl">☰</span>
-          <span className="text-2xl">📂</span>
-          <div className="text-center">
-            <h1 className="text-lg font-bold">マンホールカード</h1>
-            <div className="text-xs text-gray-500">全て</div>
+      <header className="p-4 pb-1 flex flex-col items-center border-b bg-white sticky top-0 z-30">
+        <div className="font-black text-xl tracking-tight mb-1">マンホールカード</div>
+        <div className="flex justify-around w-full max-w-md mb-1">
+          <div className="flex flex-col items-center">
+            <span className="text-gray-600 text-xs">カード</span>
+            <span className="font-bold text-xl">{ownedCount}</span>
+            <span className="text-gray-400 text-xs">{percent}%</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-gray-600 text-xs">計</span>
+            <span className="font-bold text-xl">{total}</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-gray-600 text-xs">実物</span>
+            <span className="font-bold text-xl">{realCount}</span>
+            <span className="text-gray-400 text-xs">{percentReal}%</span>
           </div>
         </div>
-        <div className="space-x-3 text-xl">
-          <span>⭐</span>
-          <span>🔍</span>
-        </div>
+        {/* 検索窓 */}
+        <input
+          type="search"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="市区町村・シリーズで検索"
+          className="w-full max-w-xs p-2 rounded border text-sm mt-2 bg-[#f5f5fa]"
+        />
       </header>
 
-      {/* サマリー */}
-      <div className="flex justify-around items-center bg-white py-4 border-b">
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-2 border-gray-300 rounded-full flex flex-col items-center justify-center">
-            <span className="text-sm">カード</span>
-            <span className="font-bold text-lg">{ownedCount}</span>
-            <span className="text-xs text-gray-500">{percentOwned}%</span>
-          </div>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="text-sm text-gray-500">計</div>
-          <div className="font-bold text-2xl">{total}</div>
-          <button className="-mt-2">
-            <ChevronDownIcon className="w-5 h-5 text-gray-400"/>
+      {/* タブ切り替え（カード/アイテム/写真/サマリー） */}
+      <nav className="flex justify-between w-full max-w-lg mx-auto bg-[#e7e9f7] rounded-xl mt-3 mb-2 px-1 shadow-sm">
+        {NAVS.map(n => (
+          <button
+            key={n.key}
+            className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all ${
+              nav === n.key
+                ? "bg-gradient-to-tr from-indigo-400 to-blue-300 text-white shadow"
+                : "text-gray-700"
+            }`}
+            onClick={() => setNav(n.key)}
+          >
+            <span className="text-lg">{n.icon}</span>
+            <span>{n.label}</span>
           </button>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-2 border-gray-300 rounded-full flex flex-col items-center justify-center">
-            <span className="text-sm">実物</span>
-            <span className="font-bold text-lg">{realCount}</span>
-            <span className="text-xs text-gray-500">{percentReal}%</span>
-          </div>
-        </div>
-      </div>
+        ))}
+      </nav>
 
-      {/* カードリスト */}
-      <div className="flex-1 overflow-y-auto px-2 py-2">
-        {Object.entries(byPref).map(([pref, list]) => (
-          <div key={pref} className="mb-4">
-            {/* 折りたたみヘッダー */}
-            <button
-              className="w-full flex justify-between items-center bg-white px-4 py-2 font-semibold"
-              onClick={() => {
-                const s = new Set(expanded);
-                if (s.has(pref)) s.delete(pref);
-                else s.add(pref);
-                setExpanded(s);
-              }}
-            >
-              <span>{pref}</span>
-              <span className="flex items-center space-x-1">
-                <span>{list.length}</span>
-                <ChevronDownIcon
-                  className={`w-4 h-4 transform ${expanded.has(pref) ? 'rotate-180' : ''}`}
-                />
-              </span>
-            </button>
-            {expanded.has(pref) && list.map(card => (
+      {/* 本体リスト or タブ切替 */}
+      <main className="flex-1 w-full max-w-lg mx-auto overflow-y-auto">
+        {/* カード一覧（カードタブ時） */}
+        {nav === "cards" && (
+          <div>
+            {filteredCards.map(card => (
               <div
                 key={card.id}
-                className="flex items-center bg-white px-4 py-2 border-b hover:bg-gray-50"
+                className="flex items-center gap-2 p-2 border-b hover:bg-[#f7f8ff] cursor-pointer"
+                onClick={() => setSelected(card)}
               >
-                {/* サムネイル */}
-                <div className="flex-shrink-0 relative">
-                  <img
-                    src={card.imageUrl}
-                    alt=""
-                    className="w-10 h-10 rounded border"
-                    onClick={() => setSelected(card)}
-                  />
-                  <span className="absolute top-0 right-0 bg-green-500 text-white text-xs rounded-full px-1">
-                    {card.series.replace(/第|弾/g, '')}
-                  </span>
-                </div>
-                {/* テキスト */}
-                <div className="flex-1 px-3">
-                  <div className="font-medium truncate">{card.city}</div>
-                  <div className="text-xs text-gray-500 truncate">
-                    {card.distributionPlace}
+                <img
+                  src={card.imageUrl}
+                  alt={card.city}
+                  className="w-14 h-20 rounded-md bg-gray-100 border object-contain flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-[1rem] text-gray-700 truncate">
+                    {card.city}
                   </div>
+                  <div className="text-xs text-gray-500 truncate">{card.series}</div>
+                  <div className="text-xs text-gray-400">{card.id}</div>
                 </div>
-                {/* カードID */}
-                <div className="text-xs text-gray-400 w-24">{card.id}</div>
-                {/* チェック */}
-                <div className="flex items-center space-x-2 pl-2">
-                  <label className="flex items-center space-x-1 text-xs">
+                <div className="flex flex-col gap-1 ml-2">
+                  <label className="flex items-center gap-1 text-xs">
                     <input
                       type="checkbox"
                       checked={owned.has(card.id)}
-                      onChange={() => {
-                        const s = new Set(owned);
-                        s.has(card.id) ? s.delete(card.id) : s.add(card.id);
-                        setOwned(s);
-                      }}
+                      onChange={e => { e.stopPropagation(); toggleOwned(card.id); }}
                     />
-                    <span>カード</span>
+                    <span>所持</span>
                   </label>
-                  <label className="flex items-center space-x-1 text-xs">
+                  <label className="flex items-center gap-1 text-xs">
                     <input
                       type="checkbox"
                       checked={real.has(card.id)}
-                      onChange={() => {
-                        const s = new Set(real);
-                        s.has(card.id) ? s.delete(card.id) : s.add(card.id);
-                        setReal(s);
-                      }}
+                      onChange={e => { e.stopPropagation(); toggleReal(card.id); }}
                     />
                     <span>実物</span>
                   </label>
                 </div>
               </div>
             ))}
+            {filteredCards.length === 0 && (
+              <div className="text-center text-gray-400 py-10">カードが見つかりません</div>
+            )}
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* 下部ナビ */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2">
-        {['カード','アイテム','写真','サマリー'].map((tab, i) => (
-          <button
-            key={i}
-            className={`text-xs ${i === 0 ? 'text-blue-600 font-bold' : 'text-gray-500'}`}
-          >
-            {tab}
-          </button>
-        ))}
-      </nav>
+        {/* ダミーのアイテム/写真/サマリー */}
+        {nav !== "cards" && (
+          <div className="text-center text-gray-400 py-16">
+            「{NAVS.find(n => n.key === nav)?.label}」画面は現在未対応です。
+          </div>
+        )}
+      </main>
 
       {/* 詳細モーダル */}
       {selected && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="bg-white rounded-lg overflow-auto max-h-[80vh] w-[90vw] p-4 relative"
-            onClick={e => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onClick={() => setSelected(null)}>
+          <div className="bg-white rounded-xl shadow-lg p-5 w-[95vw] max-w-md relative" onClick={e => e.stopPropagation()}>
             <button
-              className="absolute top-2 right-2 text-gray-500"
+              className="absolute top-2 right-2 text-2xl text-gray-400"
               onClick={() => setSelected(null)}
             >×</button>
-            <h2 className="text-center font-bold text-xl mb-2">
-              {selected.series} {selected.prefecture} {selected.city} ({selected.id})
-            </h2>
-            <img
-              src={selected.imageUrl}
-              alt=""
-              className="mx-auto mb-2 border rounded"
-            />
-            <div className="text-sm mb-1">
-              <span className="font-semibold">カードID:</span> {selected.id}
+            <img src={selected.imageUrl} alt={selected.city} className="w-32 h-44 rounded-lg mx-auto mb-2 border object-contain" />
+            <div className="font-bold text-lg text-center mb-1">{selected.city}</div>
+            <div className="text-xs text-center text-gray-500 mb-1">{selected.series}</div>
+            <div className="text-xs text-center text-gray-500 mb-2">{selected.id}</div>
+            <div className="text-xs mb-2">{selected.distributionPlace}</div>
+            <div className="text-xs text-gray-500 mb-2">{selected.details}</div>
+            <div className="text-xs text-gray-600 mb-1">
+              緯度: {selected.latitude}, 経度: {selected.longitude}
             </div>
-            <div className="text-sm mb-1">
-              <span className="font-semibold">配布場所:</span> {selected.distributionPlace}
+            <div className="flex gap-2 justify-center mt-2">
+              <label className="flex items-center gap-1 text-xs">
+                <input
+                  type="checkbox"
+                  checked={owned.has(selected.id)}
+                  onChange={() => toggleOwned(selected.id)}
+                />
+                所持
+              </label>
+              <label className="flex items-center gap-1 text-xs">
+                <input
+                  type="checkbox"
+                  checked={real.has(selected.id)}
+                  onChange={() => toggleReal(selected.id)}
+                />
+                実物
+              </label>
             </div>
-            <div className="text-sm mb-1">
-              <span className="font-semibold">緯度/経度:</span> {selected.latitude}, {selected.longitude}
-            </div>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${selected.latitude},${selected.longitude}`}
+              className="block text-center text-blue-500 underline mt-2 text-xs"
+              target="_blank" rel="noopener noreferrer"
+            >
+              Googleマップで開く
+            </a>
           </div>
         </div>
       )}
+
+      {/* ボトムナビ固定 */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center py-1 z-50 max-w-lg mx-auto">
+        {NAVS.map(n => (
+          <button
+            key={n.key}
+            onClick={() => setNav(n.key)}
+            className={`flex flex-col items-center text-xs ${nav === n.key ? "text-indigo-600 font-bold" : "text-gray-400"}`}
+          >
+            <span className="text-xl">{n.icon}</span>
+            <span>{n.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
