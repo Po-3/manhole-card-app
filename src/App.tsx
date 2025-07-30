@@ -14,11 +14,12 @@ const FILTERS = ["ALL", "取得済", "未取得"];
 const STORAGE_KEY = "owned-manhole-cards";
 const MEMO_KEY = "memo-manhole-cards";
 
-const getInitialOwned = () => {
+const getInitialOwned = (): Set<string> => {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
     if (!s) return new Set<string>();
-    return new Set(JSON.parse(s));
+    // 型アサーションでstring[]扱い
+    return new Set<string>(JSON.parse(s) as string[]);
   } catch {
     return new Set<string>();
   }
