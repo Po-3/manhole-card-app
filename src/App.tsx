@@ -271,6 +271,35 @@ export default function App() {
           </div>
         </div>
 
+        {/* TOTAL編集モーダル */}
+{totalEdit && (
+  <div
+    className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    onClick={resetTotal}
+  >
+    <div
+      className="bg-white rounded-lg p-6 min-w-[220px] shadow-xl"
+      onClick={e => e.stopPropagation()}
+    >
+      <h3 className="mb-3 font-bold text-center text-lg">TOTAL枚数を編集</h3>
+      <input
+        type="number"
+        defaultValue={total}
+        min={1}
+        className="w-20 p-1 border border-gray-300 rounded mr-2 text-center"
+        onBlur={e => saveTotal(Number(e.target.value))}
+        autoFocus
+      />
+      <button
+        className="bg-gray-300 px-2 py-1 rounded text-xs mt-2"
+        onClick={resetTotal}
+      >
+        リセット
+      </button>
+    </div>
+  </div>
+)}
+
         {/* 検索・フィルター */}
         <div className="flex flex-wrap gap-2 mb-5 sm:flex-col">
           <input
