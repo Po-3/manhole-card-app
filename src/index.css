@@ -184,3 +184,13 @@ input:focus, select:focus {
   background: linear-gradient(90deg, #6fdcff 0%, #387fff 100%);
   color: #fff;
 }
+
+.app-root { max-width:540px; margin:0 auto; }
+.tab-nav { display:flex; justify-content:center; gap:8px; margin-bottom:4px; }
+.tab-button { flex:1; padding:10px 0; border:none; border-radius:12px 12px 0 0; font-weight:700; background:#f0f4fa; color:#556; cursor:pointer;}
+.tab-button.active { background:linear-gradient(90deg,#4b6cb7 0%,#182848 100%); color:#fff; }
+.progress-bar { height:12px; background:#eee; border-radius:6px; overflow:hidden; }
+.progress-bar-inner { background:linear-gradient(90deg,#4caf50 60%,#fbd786 100%); height:100%; transition:width .3s; border-radius:6px; }
+.card-box:hover { background:#f9fafb; }
+.modal-card-detail, .modal-overlay { animation: fadeIn .25s; }
+@keyframes fadeIn { from { opacity:0; transform:scale(.96);} to
