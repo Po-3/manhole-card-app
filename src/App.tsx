@@ -16,17 +16,15 @@ type Card = {
   distributionPlace: string;
 };
 
-// タブ名
 const tabs = ["カード", "アイテム", "写真", "サマリー"];
 
 export default function App() {
   const [cards, setCards] = useState<Card[]>([]);
   const [owned, setOwned] = useState<Set<string>>(new Set());
   const [real, setReal] = useState<Set<string>>(new Set());
-  const [selected, setSelected] = useState<number | null>(null); // indexで管理
+  const [selected, setSelected] = useState<number | null>(null); // index
   const [tab, setTab] = useState("カード");
 
-  // データ読込
   useEffect(() => {
     fetch("/manhole_cards.json")
       .then(res => res.json())
@@ -40,7 +38,7 @@ export default function App() {
   const percent = total ? Math.round((ownedCount / total) * 100) : 0;
   const percentReal = total ? Math.round((realCount / total) * 100) : 0;
 
-  // カード所持/実物切替
+  // チェックボックス操作
   const toggleOwned = (id: string) => {
     setOwned(prev => {
       const next = new Set(prev);
@@ -56,11 +54,9 @@ export default function App() {
     });
   };
 
-  // ページ送り
-  const prevCard = () => setSelected(i => i !== null && i > 0 ? i - 1 : i);
-  const nextCard = () => setSelected(i => i !== null && i < cards.length - 1 ? i + 1 : i);
-
-  // フィルター等は必要に応じ追加可
+  // カード前後
+  const prevCard = () => setSelected(i => (i !== null && i > 0 ? i - 1 : i));
+  const nextCard = () => setSelected(i => (i !== null && i < cards.length - 1 ? i + 1 : i));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#fff4fa] flex flex-col pb-16 w-full max-w-[500px] mx-auto">
@@ -77,7 +73,7 @@ export default function App() {
         ))}
       </nav>
 
-      {/* サマリー進捗 */}
+      {/* サマリー */}
       {tab === "カード" && (
         <header className="pt-2 pb-2 px-2">
           <div className="flex justify-around items-end">
@@ -105,16 +101,25 @@ export default function App() {
           {cards.map((card, i) => (
             <div
               key={card.id}
-              className="flex items-center border-b py-1 px-1 hover:bg-gray-50 cursor-pointer transition"
+              className="flex flex-row items-center border-b py-2 px-1 hover:bg-gray-50 cursor-pointer transition w-full"
               onClick={() => setSelected(i)}
+              style={{ minWidth: 0 }}
             >
-              <img src={card.imageUrl} alt="" className="w-14 h-20 object-contain rounded bg-gray-100 mr-2 border" />
+              {/* サムネイル */}
+              <img
+                src={card.imageUrl}
+                alt=""
+                className="w-16 h-22 object-contain rounded bg-gray-100 border mr-2 flex-shrink-0"
+                style={{ width: 66, height: 90 }}
+              />
+              {/* 情報 */}
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-sm truncate">{card.city}</div>
                 <div className="text-xs text-gray-500 truncate">{card.distributionPlace}</div>
                 <div className="text-xs text-gray-400">{card.id}</div>
               </div>
-              <div className="flex flex-col items-end gap-1 ml-2">
+              {/* チェック */}
+              <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
                 <label className="flex items-center text-xs font-bold text-blue-500">
                   <input type="checkbox" checked={owned.has(card.id)} onChange={e => {e.stopPropagation(); toggleOwned(card.id);}} onClick={e => e.stopPropagation()} />
                   所持
@@ -129,7 +134,7 @@ export default function App() {
         </main>
       )}
 
-      {/* 他タブの中身（仮） */}
+      {/* 他タブ */}
       {tab !== "カード" && (
         <main className="flex-1 flex items-center justify-center text-gray-400 text-lg font-bold">
           {tab}は現在未対応です
@@ -149,7 +154,7 @@ export default function App() {
         ))}
       </nav>
 
-      {/* ポップアップ詳細（スライド・横並びUI・ページ送り） */}
+      {/* 詳細ポップアップ */}
       {selected !== null && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelected(null)}>
           <div className="bg-white rounded-2xl shadow-2xl p-4 w-[97vw] max-w-md mx-2 relative" onClick={e => e.stopPropagation()}>
@@ -170,7 +175,6 @@ export default function App() {
             <div className="flex gap-3 flex-row items-start">
               {/* カード画像 */}
               <img src={cards[selected].imageUrl} alt="" className="w-24 h-32 object-contain rounded-lg border shadow" />
-
               {/* 情報 */}
               <div className="flex-1 flex flex-col gap-1 min-w-0">
                 <div className="text-xs font-bold text-white bg-green-600 rounded px-2 py-1 inline-block">{cards[selected].series}</div>
@@ -192,7 +196,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* 地図とボタン群 */}
+            {/* 地図（仮画像 or Google Static MapsのURL） */}
             <div className="my-3">
               <img
                 src={`https://maps.googleapis.com/maps/api/staticmap?center=${cards[selected].latitude},${cards[selected].longitude}&zoom=13&size=320x110&markers=color:green%7C${cards[selected].latitude},${cards[selected].longitude}&key=YOUR_API_KEY`}
