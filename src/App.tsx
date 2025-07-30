@@ -136,7 +136,7 @@ const toggle = (id: string, setter: any) => {
               <span className="text-xs text-gray-400">({percent}%)</span>
             </div>
             <div>
-              <span className="text-sm text-gray-500">座標豚:</span>
+              <span className="text-sm text-gray-500">座標蓋:</span>
               <span className="ml-1 text-lg font-bold">{coordCount}</span>
               <span className="text-xs text-gray-400">({percentCoord}%)</span>
             </div>
@@ -201,7 +201,7 @@ const toggle = (id: string, setter: any) => {
                   所持
                 </label>
                 <label className="flex items-center text-xs font-bold text-green-500">
-<input type="checkbox" checked={coord.has(card.id)} onChange={e => {e.stopPropagation(); toggle(card.id, setCoord);}} onClick={e => e.stopPropagation()} />                  座標豚
+<input type="checkbox" checked={coord.has(card.id)} onChange={e => {e.stopPropagation(); toggle(card.id, setCoord);}} onClick={e => e.stopPropagation()} />                  座標蓋
                 </label>
               </div>
             </div>
@@ -215,7 +215,7 @@ const toggle = (id: string, setter: any) => {
           <div className="mt-5 text-lg font-bold">あなたのマンホールカードコレクション進捗</div>
           <div className="my-4">
             <div>所有：{ownedCount} / {total}（{percent}%）</div>
-            <div>座標豚：{coordCount} / {total}（{percentCoord}%）</div>
+            <div>座標蓋：{coordCount} / {total}（{percentCoord}%）</div>
             <div>実物GET：{realCount} / {total}（{percentReal}%）</div>
           </div>
           <div className="progress-bar"><div className="progress-bar-inner" style={{ width: `${percent}%` }} /></div>
@@ -302,7 +302,7 @@ const toggle = (id: string, setter: any) => {
   checked={coord.has(filtered[selected].id)}
   onChange={() => toggle(filtered[selected].id, setCoord)}
 />
-                    座標豚
+                    座標蓋
                   </label>
                 </div>
                 <div className="flex mt-2">
