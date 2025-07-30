@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 // マンホールカード型定義（データ形式に合わせて調整！）
 type Card = {
