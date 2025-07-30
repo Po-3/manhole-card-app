@@ -193,4 +193,8 @@ input:focus, select:focus {
 .progress-bar-inner { background:linear-gradient(90deg,#4caf50 60%,#fbd786 100%); height:100%; transition:width .3s; border-radius:6px; }
 .card-box:hover { background:#f9fafb; }
 .modal-card-detail, .modal-overlay { animation: fadeIn .25s; }
-@keyframes fadeIn { from { opacity:0; transform:scale(.96);} to
+@keyframes fadeIn { from { opacity:0; transform:scale(.96);} to {opacity:1;transform:scale(1);} }
+@media (max-width:700px){
+  .app-root, .modal-card-detail{max-width:100vw;}
+  .card-img { width:72px; height:100px; }
+}
