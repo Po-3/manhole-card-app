@@ -75,6 +75,11 @@ input[type="search"], select, input[type="number"] {
   transform: scale(1.06);
 }
 
+.card-img {
+  width: 32px;
+  height: 44px;
+}
+
 .card-info span {
   display: block;
   font-size: .97em;
