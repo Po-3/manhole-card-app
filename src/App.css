@@ -1,145 +1,295 @@
-#root {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 2.5rem 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  background: linear-gradient(135deg, #f5f7fa 0%, #ffe7fa 100%);
+/* --- 1. ルート＆背景（スマホ・PC両対応）--- */
+.mc-root {
   min-height: 100vh;
-}
-
-/* ヘッダー */
-h1 {
-  font-size: 2.4rem;
-  font-weight: 900;
+  min-width: 100vw;
+  background: linear-gradient(120deg,#f5f7fa 0%,#fffbe7 100%);
+  font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', Arial, sans-serif;
   color: #24344d;
-  letter-spacing: .02em;
-  margin-bottom: 1rem;
-  text-shadow: 0 3px 16px #f5f5f9cc;
+  box-sizing: border-box;
+  padding-bottom: 60px; /* ナビ分 */
 }
 
-/* 操作系ボタン */
-button {
-  background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
-  color: #fff;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  padding: 7px 20px;
-  margin: 2px 4px;
+/* --- 2. ヘッダー・進捗バー --- */
+.mc-header {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 18px 18px 10px 18px;
+  box-shadow: 0 2px 12px #eee7;
+}
+
+.mc-title {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-align: center;
+  color: #24344d;
+  margin-bottom: 0.4em;
+}
+
+.mc-progress-wrap {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto 8px auto;
+}
+.mc-progress-bar {
+  background: #f5f7fa;
+  border-radius: 100px;
+  height: 14px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 3px;
+}
+.mc-progress-bar-inner {
+  background: linear-gradient(90deg,#FFBD4A 0%,#FF881B 100%);
+  height: 100%;
+  border-radius: 100px;
+  transition: width .28s;
+}
+.mc-progress-label {
+  font-size: 0.85em;
+  color: #FF881B;
+  font-weight: 700;
+  text-align: right;
+  margin-top: -21px;
+  margin-right: 12px;
+  letter-spacing: 0.01em;
+  z-index: 1;
+  position: relative;
+}
+
+/* --- 3. フィルタタブ・絞り込み --- */
+.mc-tab-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  margin-top: 6px;
+}
+.mc-tab-btn {
+  background: #fff;
+  border: 1.5px solid #FFD18E;
+  color: #FF881B;
+  font-weight: 700;
+  border-radius: 100px;
+  padding: 7px 22px;
   font-size: 1.05em;
   cursor: pointer;
-  box-shadow: 0 2px 8px #bbb3;
-  transition: background .15s, box-shadow .15s, transform .10s;
+  transition: all .18s;
 }
-button:hover, button:focus {
-  background: linear-gradient(90deg, #24344d 0%, #182848 100%);
-  box-shadow: 0 4px 14px #aaa6;
-  transform: translateY(-2px) scale(1.04);
-}
-
-/* 入力系 */
-input[type="search"], select, input[type="number"] {
-  border: 1.4px solid #b3aaff;
-  border-radius: 7px;
-  padding: 7px 12px;
-  font-size: 1em;
-  background: #f8f8fc;
-  margin-right: 5px;
+.mc-tab-btn.active,
+.mc-tab-btn:active {
+  background: linear-gradient(90deg, #FFBD4A 0%, #FF881B 100%);
+  color: #fff;
+  border-color: #FF881B;
+  box-shadow: 0 2px 9px #fcd47b77;
 }
 
-/* 進捗バー */
-.progress-bar {
-  background: #ddd;
-  border-radius: 10px;
+.mc-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.mc-filter-row select,
+.mc-filter-row input[type="search"] {
+  border: 1.5px solid #FFBD4A;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.97em;
+  background: #fffbe7;
+  color: #222;
+  min-width: 95px;
+}
+
+/* --- 4. カードグリッド --- */
+.mc-card-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 18px 10px 0 10px;
+}
+@media (max-width: 500px) {
+  .mc-card-list { gap: 10px; margin: 8px 2px 0 2px; }
+}
+.mc-card-box {
+  background: #fff;
+  border-radius: 18px;
+  border: 1.8px solid #f2cb87;
+  box-shadow: 0 2px 12px #ffd77030;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 148px;
+  padding: 10px 6px 12px 6px;
+  cursor: pointer;
   position: relative;
-  height: 18px;
+  transition: box-shadow .18s, border-color .15s;
+}
+.mc-card-box.selected,
+.mc-card-box:active,
+.mc-card-box:hover {
+  border-color: #FF881B;
+  box-shadow: 0 4px 22px #ffe4bc88;
+  background: #fff8f2;
+}
+.mc-card-info {
+  font-size: .92em;
+  color: #444;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+.mc-card-series {
+  font-size: 0.82em;
+  color: #FF881B;
+  font-weight: 700;
+}
+.mc-card-thumb-wrap {
+  width: 56px;
+  height: 74px;
+  border-radius: 12px;
   overflow: hidden;
-  margin: 0 0 4px 0;
+  background: #fffbe7;
+  margin-bottom: 1px;
+  margin-top: 2px;
+  box-shadow: 0 1px 4px #fde5a340;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.progress-bar-inner {
-  background: linear-gradient(90deg, #4caf50 60%, #fbd786 100%);
+.mc-card-thumb {
+  object-fit: contain;
+  width: 100%;
   height: 100%;
-  border-radius: 10px;
-  transition: width .3s;
-}
-
-/* カードグリッド */
-
-.card-box:hover {
-  box-shadow: 0 8px 28px rgba(60,40,60,0.15);
-  transform: translateY(-4px) scale(1.022);
-}
-.card-img:hover {
-  box-shadow: 0 8px 28px #fc6;
-  transform: scale(1.06);
-}
-
-.card-img {
-  width: 32px;
-  height: 44px;
-}
-
-.card-info span {
   display: block;
-  font-size: .97em;
-  color: #546;
-  margin: 2px 0 0 0;
+  pointer-events: none;
+}
+.mc-card-id {
+  font-family: "M PLUS 1 Code", monospace, "Meiryo", Arial, sans-serif;
+  font-size: 0.93em;
+  color: #A96F10;
+  letter-spacing: 0.01em;
 }
 
-
-/* レスポンシブでスマホ最適化 */
-@media (max-width: 700px) {
-  #root {
-    padding: 0.6rem 0.5rem 1.5rem 0.5rem;
-    max-width: 100vw;
-  }
-  h1 {
-    font-size: 1.6rem;
-    margin-bottom: 0.5rem;
-  }
-  .card-list {
-    gap: 18px;
-    margin-top: 13px;
-  }
-  .card-box {
-    padding: 9px 2px 12px 2px;
-  }
-  .card-img {
-    width: 95px;
-    margin-bottom: 5px;
-  }
-  .card-info {
-    font-size: .97em;
-    margin-bottom: 3px;
-  }
-  button, input[type="search"], select, input[type="number"] {
-    font-size: 0.97em;
-    padding: 6px 8px;
-  }
+/* --- 5. 取得ボタン --- */
+.mc-check-btn {
+  border: none;
+  background: #ffe1a1;
+  border-radius: 999px;
+  color: #FFA740;
+  padding: 6px 0;
+  font-size: 1em;
+  font-weight: 900;
+  width: 85%;
+  margin: 0 auto 0 auto;
+  transition: background .13s, color .14s;
+  box-shadow: 0 2px 9px #ffe4b733;
+  display: block;
+}
+.mc-check-btn.checked {
+  background: linear-gradient(90deg, #FFBD4A 0%, #FF881B 100%);
+  color: #fff;
 }
 
-/* 既存ロゴ・アニメ関連（不要なら消してOK） */
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+/* --- 6. モーダル（詳細・メモ）--- */
+.mc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(24, 20, 11, 0.38);
+  display: flex;
+  align-items: end;
+  z-index: 999;
+  transition: background 0.2s;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.mc-modal-sheet {
+  background: #fff;
+  border-radius: 23px 23px 0 0;
+  box-shadow: 0 -7px 40px #ffe6bc30;
+  padding: 18px 18px 26px 18px;
+  width: 100vw;
+  max-width: 460px;
+  min-height: 310px;
+  margin: 0 auto;
+  position: relative;
+  animation: modalUp .23s cubic-bezier(.36,1.37,.34,1) both;
 }
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+@keyframes modalUp {
+  from { transform: translateY(88px); opacity: 0;}
+  to   { transform: translateY(0); opacity: 1;}
 }
-@keyframes logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.mc-modal-bar {
+  width: 48px;
+  height: 5px;
+  background: #FFA74044;
+  border-radius: 8px;
+  margin: 0 auto 18px auto;
+  display: block;
 }
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.mc-modal-title {
+  color: #FFA740;
+  font-size: 1.3em;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 5px;
 }
-.card { padding: 2em; }
-.read-the-docs { color: #888; }
+.mc-modal-id {
+  font-family: "M PLUS 1 Code", monospace, "Meiryo", Arial, sans-serif;
+  font-size: 1em;
+  color: #B17608;
+  text-align: center;
+  margin-bottom: 5px;
+}
+.mc-modal-memo {
+  width: 100%;
+  min-height: 64px;
+  border: 1.5px solid #FFD18E;
+  border-radius: 12px;
+  padding: 8px 13px;
+  font-size: 1em;
+  background: #fffbe7;
+  margin-top: 8px;
+  margin-bottom: 5px;
+  resize: none;
+}
+.mc-modal-check-btn {
+  margin: 10px auto 0 auto;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 0;
+  width: 70%;
+  font-size: 1.1em;
+  font-weight: 900;
+  background: linear-gradient(90deg,#FFBD4A 0%,#FF881B 100%);
+  color: #fff;
+  box-shadow: 0 2px 9px #ffe4b733;
+  display: block;
+  transition: filter .15s;
+}
+.mc-modal-check-btn.unchecked {
+  background: #ffe1a1;
+  color: #FFA740;
+}
+
+/* --- 7. スクロールバー・全体調整 --- */
+::-webkit-scrollbar {
+  width: 9px;
+  background: #f5f7fa;
+}
+::-webkit-scrollbar-thumb {
+  background: #ffe3a1;
+  border-radius: 6px;
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (max-width: 500px) {
+  .mc-modal-sheet { padding: 12px 7px 18px 7px; }
+  .mc-header { padding: 12px 7px 6px 7px; }
+  .mc-progress-wrap { max-width: 95vw; }
+}
