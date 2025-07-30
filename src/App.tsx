@@ -64,9 +64,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#fff4fa] flex flex-col pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-[#f7fafc] to-[#fff4fa] flex flex-col pb-16 overflow-x-hidden">
       {/* サマリー */}
-      <header className="py-3 px-3 border-b bg-white">
+      <header className="py-3 px-3 border-b bg-white max-w-screen-sm mx-auto w-full">
         <div className="flex justify-between items-center mb-1">
           <div className="text-2xl font-black">マンホールカード</div>
         </div>
@@ -89,7 +89,7 @@ export default function App() {
       </header>
 
       {/* グループリスト */}
-      <main className="flex-1 overflow-y-auto px-2 bg-white">
+      <main className="flex-1 overflow-y-auto px-2 bg-white max-w-screen-sm mx-auto w-full">
         {Object.entries(grouped).map(([pref, group]) => (
           <div key={pref} className="mb-3">
             <div className="bg-[#f0f4ff] px-2 py-1 rounded font-bold text-[#335] mb-1 flex items-center">
@@ -125,24 +125,30 @@ export default function App() {
       </main>
 
       {/* 下部ナビ */}
-      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white flex justify-around items-center py-2 z-50">
+      <nav className="fixed bottom-0 left-0 right-0 border-t bg-white flex justify-around items-center py-2 z-50 max-w-screen-sm mx-auto w-full">
         <button className="flex flex-col items-center text-xs text-indigo-700 font-bold"><span>カード</span></button>
         <button className="flex flex-col items-center text-xs text-gray-400"><span>アイテム</span></button>
         <button className="flex flex-col items-center text-xs text-gray-400"><span>写真</span></button>
         <button className="flex flex-col items-center text-xs text-gray-400"><span>サマリー</span></button>
       </nav>
 
-      {/* カード詳細 */}
+      {/* カード詳細モーダル（ポップアップ） */}
       {selected && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setSelected(null)}>
-          <div className="bg-white rounded-xl p-6 shadow-xl w-[90vw] max-w-lg relative" onClick={e => e.stopPropagation()}>
-            <button className="absolute right-2 top-2 text-3xl text-gray-400" onClick={() => setSelected(null)}>×</button>
-            <img src={selected.imageUrl} alt="" className="w-40 h-52 object-contain rounded mx-auto mb-3 border" />
-            <div className="font-bold text-lg mb-1">{selected.city}</div>
-            <div className="text-xs text-gray-400 mb-2">{selected.id}</div>
-            <div className="mb-2">{selected.distributionPlace}</div>
-            <div className="text-xs mb-1">緯度: {selected.latitude} 経度: {selected.longitude}</div>
-            <div className="text-xs text-gray-500">{selected.series} {selected.details}</div>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-[92vw] max-w-xs p-5 relative animate-fadeIn"
+            onClick={e => e.stopPropagation()}
+          >
+            <button className="absolute right-3 top-3 text-2xl text-gray-400" onClick={() => setSelected(null)}>×</button>
+            <img src={selected.imageUrl} alt="" className="w-32 h-44 object-contain rounded mx-auto mb-3 border shadow" />
+            <div className="font-bold text-base mb-1 text-center">{selected.city}</div>
+            <div className="text-xs text-gray-400 mb-1 text-center">{selected.id}</div>
+            <div className="mb-1 text-center text-xs">{selected.distributionPlace}</div>
+            <div className="text-xs mb-1 text-center">緯度: {selected.latitude} / 経度: {selected.longitude}</div>
+            <div className="text-xs text-gray-500 mb-2 text-center">{selected.series} {selected.details}</div>
             <div className="flex gap-4 mt-2 justify-center">
               <label className="flex items-center text-xs font-bold text-blue-500">
                 <input type="checkbox" checked={owned.has(selected.id)} onChange={() => toggleOwned(selected.id)} />
@@ -156,6 +162,16 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* スクロール横幅対策 */}
+      <style>{`
+        html, body, #root {
+          max-width: 100vw;
+          overflow-x: hidden;
+        }
+        .animate-fadeIn { animation: fadeIn 0.19s;}
+        @keyframes fadeIn {from {opacity:0; transform:scale(0.98);} to {opacity:1; transform:scale(1);}}
+      `}</style>
     </div>
   );
 }
