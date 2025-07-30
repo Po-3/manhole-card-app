@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDownIcon } from '@heroicons/react/outline';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 type Card = {
   id: string;
