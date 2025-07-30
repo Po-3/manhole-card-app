@@ -82,13 +82,13 @@ export default function App() {
   const percentCoord = total ? Math.round((coordCount / total) * 100) : 0;
 
   // チェック操作
-  const toggle = (id: string, set: Set<string>, setter: any) => {
-    setter((prev: Set<string>) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+const toggle = (id: string, setter: any) => {
+  setter((prev: Set<string>) => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+};
 
   // カード前後
   const prevCard = () => setSelected(i => (i !== null && i > 0 ? i - 1 : i));
@@ -197,12 +197,11 @@ export default function App() {
               {/* チェック */}
               <div className="flex flex-col items-end gap-1 ml-2 flex-shrink-0">
                 <label className="flex items-center text-xs font-bold text-blue-500">
-                  <input type="checkbox" checked={owned.has(card.id)} onChange={e => {e.stopPropagation(); toggle(card.id, owned, setOwned);}} onClick={e => e.stopPropagation()} />
+<input type="checkbox" checked={owned.has(card.id)} onChange={e => {e.stopPropagation(); toggle(card.id, setOwned);}} onClick={e => e.stopPropagation()} />
                   所持
                 </label>
                 <label className="flex items-center text-xs font-bold text-green-500">
-                  <input type="checkbox" checked={coord.has(card.id)} onChange={e => {e.stopPropagation(); toggle(card.id, coord, setCoord);}} onClick={e => e.stopPropagation()} />
-                  座標豚
+<input type="checkbox" checked={coord.has(card.id)} onChange={e => {e.stopPropagation(); toggle(card.id, setCoord);}} onClick={e => e.stopPropagation()} />                  座標豚
                 </label>
               </div>
             </div>
@@ -291,11 +290,18 @@ export default function App() {
                 <div className="text-[11px] text-gray-400">緯度: {filtered[selected].latitude}／経度: {filtered[selected].longitude}</div>
                 <div className="flex gap-4 mt-2">
                   <label className="flex items-center text-xs font-bold text-blue-500">
-                    <input type="checkbox" checked={owned.has(filtered[selected].id)} onChange={() => toggle(filtered[selected].id, owned, setOwned)} />
-                    所持
-                  </label>
-                  <label className="flex items-center text-xs font-bold text-green-500">
-                    <input type="checkbox" checked={coord.has(filtered[selected].id)} onChange={() => toggle(filtered[selected].id, coord, setCoord)} />
+<input
+  type="checkbox"
+  checked={owned.has(filtered[selected].id)}
+  onChange={() => toggle(filtered[selected].id, setOwned)}
+/>
+所持
+
+<input
+  type="checkbox"
+  checked={coord.has(filtered[selected].id)}
+  onChange={() => toggle(filtered[selected].id, setCoord)}
+/>
                     座標豚
                   </label>
                 </div>
