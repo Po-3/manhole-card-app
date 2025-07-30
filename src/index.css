@@ -1,78 +1,121 @@
 /* 1. Tailwind Base（リセット＆プリプロセッサ） */
 @tailwind base;
 
-/* 2. カスタムリセット＆グローバルスタイル */
+/* 2. グローバルスタイル＆カスタムリセット */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
+  color-scheme: light;
+  color: #223;
+  background: linear-gradient(135deg, #f5f7fa 0%, #ffe7fa 100%);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: inherit;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
-  text-decoration: inherit;
+  text-decoration: none;
+  transition: color .15s;
 }
 a:hover {
   color: #535bf2;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 2.1em;
+  font-weight: 900;
+  color: #24344d;
+  margin-bottom: 1.2rem;
+  letter-spacing: .01em;
+  text-shadow: 0 3px 18px #f5f5f9aa;
+  line-height: 1.13;
 }
 
+/* スマホで見やすく */
+@media (max-width: 700px) {
+  h1 {
+    font-size: 1.3em;
+    margin-bottom: 0.7rem;
+  }
+}
+
+/* 操作ボタン（classで上書き推奨だがデフォも強化） */
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  border: none;
+  padding: 0.63em 1.2em;
   font-size: 1em;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+  color: #fff;
   cursor: pointer;
-  transition: border-color 0.25s;
+  box-shadow: 0 2px 8px #bbb2;
+  transition: background .18s, box-shadow .13s, transform .11s;
 }
-button:hover {
-  border-color: #646cff;
+button:hover, button:focus {
+  background: linear-gradient(90deg, #24344d 0%, #182848 100%);
+  box-shadow: 0 4px 15px #aaa6;
+  transform: translateY(-2px) scale(1.04);
 }
-button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px solid #b3aaffcc;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* 入力系 */
+input[type="search"], select, input[type="number"] {
+  border: 1.3px solid #b3aaff;
+  border-radius: 7px;
+  padding: 7px 12px;
+  font-size: 1em;
+  background: #f8f8fc;
+  margin-right: 5px;
+  transition: border .17s;
+}
+input:focus, select:focus {
+  border-color: #4b6cb7;
+  outline: none;
 }
 
-/* 3. Tailwind Components（必要に応じてカスタムコンポーネントをここに追加） */
+/* スクロールバーも明るめに */
+::-webkit-scrollbar {
+  width: 9px;
+  background: #f6eefd;
+}
+::-webkit-scrollbar-thumb {
+  background: #dedcf6;
+  border-radius: 5px;
+}
+
+/* 進捗バー（上書きclass推奨） */
+.progress-bar {
+  background: #e4eaf2;
+  border-radius: 10px;
+  position: relative;
+  height: 18px;
+  overflow: hidden;
+  margin: 0 0 7px 0;
+}
+.progress-bar-inner {
+  background: linear-gradient(90deg, #4caf50 65%, #fbd786 100%);
+  height: 100%;
+  border-radius: 10px;
+  transition: width .3s;
+}
+
+/* 3. Tailwind Components（カスタムコンポーネント追加用） */
 @tailwind components;
 
-/* 4. Tailwind Utilities（ユーティリティクラスを使用可能に） */
+/* 4. Tailwind Utilities（ユーティリティクラス） */
 @tailwind utilities;
