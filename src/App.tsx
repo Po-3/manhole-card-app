@@ -328,30 +328,28 @@ export default function App() {
           </select>
         </div>
 
-        {/* カード一覧グリッド */}
-<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+{/* カード一覧グリッド */}
+<div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-2">
   {showList.map((g, i) => (
-    <div key={`${g.city}-${g.no}`}
-      className="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all flex flex-col items-center pb-3 pt-3 px-2 border border-[#e1e4ed] hover:-translate-y-1"
+    <div
+      key={`${g.city}-${g.no}`}
+      className="bg-white rounded-lg shadow border hover:shadow-lg transition-all flex flex-col items-center pb-2 pt-2 px-1"
     >
-      {/* サムネイル画像（小さく！） */}
       <img
         src={g.versions[0].imageUrl}
         alt={`${g.city} サムネイル`}
-        className="w-10 h-14 object-contain rounded-md mb-1 cursor-pointer border"
+        className="w-8 h-11 object-contain rounded border mb-1 cursor-pointer"
         onClick={() => setModalUrl(g.versions[0].imageUrl)}
       />
-      {/* 市町村・都道府県・No */}
-      <div className="text-center w-full mb-1">
+      <div className="text-center w-full mb-0.5">
         <div className="font-semibold text-xs truncate">{g.city}</div>
         <div className="text-[10px] text-gray-500 truncate">{g.prefecture}</div>
         <div className="text-[10px] text-gray-400">{g.no}</div>
       </div>
-      {/* バージョンごとチェック */}
-      <div className="flex justify-center gap-2">
+      <div className="flex justify-center gap-1">
         {versionLabels.map(label =>
           g.versions.some(v => v.version === label) ? (
-            <label key={label} className="flex items-center gap-1 text-[10px] font-medium">
+            <label key={label} className="flex items-center gap-0.5 text-[10px] font-medium">
               <input
                 type="checkbox"
                 className="accent-blue-400"
