@@ -1,89 +1,258 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-// 型定義
+// カードデータ型
 type Card = {
-  id: string;
-  series: string;
-  imageUrl: string; // 画像URL
-  prefecture: string;
-  city: string;
-  details: string;  // カードID
-  // …他のプロパティもあれば追加OK
+  id: string;           // 例: "03-216-B001"
+  series: string;       // 例: "26"
+  prefecture: string;   // 例: "岩手県"
+  city: string;         // 例: "滝沢市"
+  details: string;      // 例: "03-216-B001"
+  // imageUrl?: string; // 本番は画像URLも入れて
 };
+
+const FILTERS = ["ALL", "取得済", "未取得"];
+const STORAGE_KEY = "owned-manhole-cards";
+const MEMO_KEY = "memo-manhole-cards";
+
+const getInitialOwned = (): Set<string> => {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    if (!s) return new Set();
+    return new Set(JSON.parse(s));
+  } catch {
+    return new Set();
+  }
+};
+const getInitialMemo = (): Record<string, string> => {
+  try {
+    const s = localStorage.getItem(MEMO_KEY);
+    if (!s) return {};
+    return JSON.parse(s);
+  } catch {
+    return {};
+  }
+};
+
+const getSeriesList = (cards: Card[]) =>
+  Array.from(new Set(cards.map(c => c.series))).sort((a, b) => b.localeCompare(a, "ja"));
 
 export default function App() {
   const [cards, setCards] = useState<Card[]>([]);
+  const [owned, setOwned] = useState<Set<string>>(getInitialOwned);
   const [filter, setFilter] = useState("ALL");
+  const [series, setSeries] = useState("ALL");
+  const [popupIdx, setPopupIdx] = useState<number | null>(null);
+  const [memo, setMemo] = useState<Record<string, string>>(getInitialMemo);
 
-  // JSONデータ取得
   useEffect(() => {
     fetch("/manhole_cards.json")
       .then(res => res.json())
-      .then(setCards);
+      .then((data: Card[]) => setCards(data));
   }, []);
 
-  // シリーズ一覧（例: ["ALL", "第26弾", ...]）
-  const allSeries = ["ALL", ...Array.from(new Set(cards.map(c => c.series)).values())];
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(owned)));
+  }, [owned]);
+  useEffect(() => {
+    localStorage.setItem(MEMO_KEY, JSON.stringify(memo));
+  }, [memo]);
 
-  // フィルタ処理
-  const filtered = filter === "ALL"
-    ? cards
-    : cards.filter(card => card.series === filter);
+  // フィルタ
+  let filtered = cards;
+  if (series !== "ALL") filtered = filtered.filter(c => c.series === series);
+  if (filter === "取得済") filtered = filtered.filter(c => owned.has(c.id));
+  if (filter === "未取得") filtered = filtered.filter(c => !owned.has(c.id));
+  filtered = filtered.slice().sort(
+    (a, b) =>
+      a.prefecture.localeCompare(b.prefecture, "ja") ||
+      a.city.localeCompare(b.city, "ja") ||
+      a.id.localeCompare(b.id, "ja")
+  );
+  const seriesList = getSeriesList(cards);
+  const total = cards.length;
+  const ownedCount = owned.size;
+
+  const toggleOwned = (id: string) => {
+    setOwned(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const setMemoFor = (id: string, value: string) => setMemo(prev => ({ ...prev, [id]: value }));
+
+  // 2列グリッド
+  function renderGrid() {
+    const grid = [];
+    for (let i = 0; i < filtered.length; i += 2) {
+      grid.push(
+        <div key={i} className="flex w-full gap-3 mb-3">
+          {[0, 1].map(j => {
+            const card = filtered[i + j];
+            return card ? (
+              <CardBox
+                key={card.id}
+                card={card}
+                owned={owned.has(card.id)}
+                onCheck={() => toggleOwned(card.id)}
+                onClick={() => setPopupIdx(i + j)}
+              />
+            ) : (
+              <div className="flex-1" key={`blank-${j}`} />
+            );
+          })}
+        </div>
+      );
+    }
+    return grid;
+  }
+
+  // 詳細
+  const showCard = popupIdx !== null && filtered[popupIdx];
+  const card = showCard ? filtered[popupIdx!] : null;
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] flex flex-col font-sans">
+    <div className="min-h-screen w-full max-w-[430px] mx-auto bg-[#fff] font-sans">
       {/* ヘッダー */}
-      <header className="flex items-center px-4 pt-4 pb-2">
-        <span className="inline-flex items-center mr-2">
-          <span className="bg-[#ededed] rounded-full p-2">
-            <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="#ffa640" /></svg>
+      <header className="p-3 pt-6 pb-2 flex flex-col gap-2 relative">
+        <div className="flex items-center gap-2 mb-1">
+          <img src="/manhole-icon.svg" alt="" className="w-8 h-8" />
+          <span className="text-[#FFA740] font-black text-2xl tracking-tight" style={{ letterSpacing: "-0.02em" }}>
+            ALL
           </span>
-          <span className="ml-2 text-[#FFA640] font-bold text-lg tracking-tight">ALL</span>
-        </span>
-        <div className="flex-1" />
-        <span className="text-[#FFA640] font-extrabold text-xl">{filtered.length}</span>
-        <span className="text-[#FFA640] font-bold text-base">/ {cards.length}</span>
+          <span className="ml-auto font-bold text-[#FFA740] text-xl">{ownedCount} / {total}</span>
+        </div>
+        <div className="flex flex-row gap-1 mb-1">
+          {FILTERS.map(t => (
+            <button
+              key={t}
+              className={`rounded-full px-5 py-1 text-base font-bold ${filter === t ? "bg-[#FFA740] text-white" : "bg-gray-100 text-gray-500"}`}
+              onClick={() => setFilter(t)}
+            >{t}</button>
+          ))}
+        </div>
+        <div className="flex flex-row gap-1 overflow-x-auto pb-1 hide-scrollbar">
+          <button
+            className={`rounded-full px-4 py-1 text-base font-bold ${series === "ALL" ? "bg-[#FFA740] text-white" : "bg-gray-100 text-gray-500"}`}
+            onClick={() => setSeries("ALL")}
+          >ALL</button>
+          {seriesList.map(s => (
+            <button
+              key={s}
+              className={`rounded-full px-4 py-1 text-base font-bold ${series === s ? "bg-[#FFA740] text-white" : "bg-gray-100 text-gray-500"}`}
+              onClick={() => setSeries(s)}
+            >第{s}弾</button>
+          ))}
+        </div>
       </header>
 
-      {/* タブバー（シリーズごと） */}
-      <div className="flex overflow-x-auto gap-1 px-3 pb-2">
-        {allSeries.map(series => (
-          <button
-            key={series}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full font-bold mr-1 transition
-              ${series === filter ? "bg-[#FFA640] text-white" : "bg-[#f5f5f5] text-[#FFA640]"}
-              shadow-sm text-sm`}
-            onClick={() => setFilter(series)}
-          >{series}</button>
-        ))}
-      </div>
+      {/* カードグリッド */}
+      <main className="px-3 pb-20">
+        {renderGrid()}
+        {!filtered.length && (
+          <div className="text-center text-gray-400 py-10 text-lg">カードがありません</div>
+        )}
+      </main>
 
-      {/* グリッド（スマホ4列風・PC可変） */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-2 pb-12">
-        {filtered.map((card) => (
-          <div
-            key={card.id}
-            className="bg-[#FFA640] rounded-xl shadow-lg flex flex-col items-center py-2 px-1 relative min-h-[140px]"
-          >
-            {/* 弾数（左上） */}
-            <span className="absolute left-2 top-2 text-white text-lg font-bold">{card.series.replace("第", "").replace("弾", "")}</span>
-            {/* 画像 */}
-            <div className="w-[80px] h-[60px] bg-white/70 rounded-md flex items-center justify-center my-2">
-              {card.imageUrl
-                ? <img src={card.imageUrl} alt={card.city} className="w-[60px] h-[60px] object-contain rounded" />
-                : (
-                  <svg width="36" height="36">
-                    <circle cx="18" cy="18" r="14" fill="#fff" stroke="#FFA640" strokeWidth="3" />
-                    <path d="M12 20 l6 6 l10 -12" stroke="#ddd" strokeWidth="3" fill="none" />
-                  </svg>
-                )}
+      {/* 詳細モーダル */}
+      {showCard && card && (
+        <Modal onClose={() => setPopupIdx(null)}>
+          <div className="flex flex-col gap-2 px-1 py-2 items-center">
+            <div className="text-[#FFA740] font-black text-lg mb-2">{card.series}／{card.prefecture}／{card.city}</div>
+            <div className="text-lg font-mono text-gray-600 mb-1">{card.details}</div>
+            <button
+              onClick={() => toggleOwned(card.id)}
+              className={`rounded-full w-14 h-14 flex items-center justify-center mb-2 shadow ${owned.has(card.id) ? "bg-[#FFA740]" : "bg-gray-200"}`}
+            >
+              {owned.has(card.id)
+                ? <span className="text-white text-4xl font-black">✔️</span>
+                : <span className="text-gray-400 text-4xl font-black">✔️</span>
+              }
+            </button>
+            {/* メモ欄 */}
+            <textarea
+              className="rounded border w-full p-2 text-base"
+              placeholder="このカードの思い出やメモ"
+              rows={3}
+              value={memo[card.id] || ""}
+              onChange={e => setMemoFor(card.id, e.target.value)}
+              style={{ resize: "none" }}
+            />
+            {/* ページ送り */}
+            <div className="flex justify-between items-center w-full mt-3">
+              <button
+                onClick={() => setPopupIdx(idx => idx! > 0 ? idx! - 1 : idx)}
+                disabled={popupIdx === 0}
+                className="px-2 py-1 text-2xl font-bold rounded text-[#FFA740] disabled:opacity-40"
+              >{"<"}</button>
+              <div className="text-base text-[#FFA740]">{popupIdx! + 1} / {filtered.length}</div>
+              <button
+                onClick={() => setPopupIdx(idx => idx! < filtered.length - 1 ? idx! + 1 : idx)}
+                disabled={popupIdx === filtered.length - 1}
+                className="px-2 py-1 text-2xl font-bold rounded text-[#FFA740] disabled:opacity-40"
+              >{">"}</button>
             </div>
-            {/* 都道府県・市 */}
-            <div className="text-xs text-white font-bold">{card.prefecture} {card.city}</div>
-            {/* カードID */}
-            <div className="text-base text-white font-bold tracking-wide">{card.details}</div>
           </div>
-        ))}
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+// ---- CardBox ----
+function CardBox({
+  card,
+  owned,
+  onCheck,
+  onClick,
+}: {
+  card: Card;
+  owned: boolean;
+  onCheck: () => void;
+  onClick: () => void;
+}) {
+  return (
+    <div
+      className="flex-1 flex flex-col items-center justify-between bg-white rounded-2xl shadow border cursor-pointer transition min-h-[160px] p-1"
+      style={{
+        borderColor: owned ? "#FFA740" : "#ddd",
+        background: owned ? "#FFA74022" : "#fff"
+      }}
+      onClick={onClick}
+    >
+      <div className="w-full flex flex-row items-start justify-between px-1 pt-1">
+        <span className="font-bold text-[#FFA740] text-lg">{card.series}</span>
+        <span className="font-bold text-[#FFA740] text-sm text-right">{card.prefecture}<br />{card.city}</span>
+      </div>
+      <div className="w-full flex justify-center items-center h-[56px] mt-1 mb-1 relative">
+        {owned ? (
+          <img src={`/cards/${card.id}.png`} alt={card.details} className="object-contain w-[48px] h-[56px] rounded-xl bg-white" />
+        ) : (
+          <div className="w-[48px] h-[56px] rounded-xl bg-white border flex items-center justify-center relative">
+            <span className="text-gray-300 text-5xl font-black absolute top-1/2 left-1/2" style={{ transform: "translate(-50%, -50%)" }}>✔️</span>
+          </div>
+        )}
+      </div>
+      <div className="w-full flex flex-col items-center mt-1 mb-1">
+        <div className="font-mono text-base text-gray-800">{card.details}</div>
+        <button
+          onClick={e => { e.stopPropagation(); onCheck(); }}
+          className={`mt-1 w-full rounded-full py-1 font-bold ${owned ? "bg-[#FFA740] text-white" : "bg-gray-100 text-gray-500"}`}
+        >
+          {owned ? "取得済み" : "未取得"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---- Modal ----
+function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-end z-50" onClick={onClose}>
+      <div className="w-full bg-white rounded-t-2xl pb-4 pt-2 px-3 max-h-[94vh] overflow-auto" onClick={e => e.stopPropagation()}>
+        <div className="w-14 h-1 bg-[#FFA74099] rounded-full mx-auto mb-4" />
+        {children}
       </div>
     </div>
   );
