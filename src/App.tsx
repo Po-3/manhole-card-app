@@ -3,20 +3,15 @@ import { useEffect, useState } from "react";
 // --- カード型 ---
 type Card = {
   id: string;
-  series: string;
+  series: string;         // 例: "26"
   prefecture: string;
   city: string;
   details: string;
   imageUrl: string;
 };
 
-const TAB_LABELS = [
-  "ALL", "取得済", "未取得",
-  ...Array.from({ length: 26 }, (_, i) => `第${26 - i}弾`)
-];
 const STORAGE_KEY = "owned-manhole-cards";
 
-// --- 所有情報の初期化 ---
 function getInitialOwned(): Set<string> {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
@@ -43,11 +38,28 @@ export default function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(owned)));
   }, [owned]);
 
+  // --- seriesリスト（降順、重複なし） ---
+  const uniqueSeries = Array.from(new Set(cards.map(c => c.series)))
+    .filter(Boolean)
+    .sort((a, b) => Number(b) - Number(a)); // "26", "25", ...
+
+  // --- タブラベル ---
+  const TAB_LABELS = [
+    "ALL", "取得済", "未取得",
+    ...uniqueSeries.map(s => `第${s}弾`)
+  ];
+
   // --- フィルタ ---
   let filtered = cards;
   if (filter === "取得済") filtered = cards.filter(c => owned.has(c.id));
   else if (filter === "未取得") filtered = cards.filter(c => !owned.has(c.id));
-  else if (filter.startsWith("第")) filtered = cards.filter(c => c.series === filter.replace("第", "").replace("弾", ""));
+  else if (filter.startsWith("第")) {
+    const seriesNum = filter.replace("第", "").replace("弾", "");
+    filtered = cards.filter(c => c.series === seriesNum);
+  }
+
+  // --- カードもseries降順 ---
+  filtered = filtered.slice().sort((a, b) => Number(b.series) - Number(a.series));
 
   // --- 所有数カウント ---
   const ownedCount = owned.size;
@@ -95,22 +107,21 @@ export default function App() {
             role="button"
             aria-pressed={owned.has(card.id)}
           >
-            <div className="card-series">{card.series}</div>
+            <div className="card-series">{`第${card.series}弾`}</div>
             <div className="card-area">{card.prefecture}{card.city}</div>
             <div className="card-imgbox">
+              {/* サムネイル画像 */}
               <img
                 src={card.imageUrl}
                 alt=""
                 className="card-img"
                 style={{
-                  width: 80, height: 60,
-                  objectFit: "cover",
-                  borderRadius: 7,
-                  background: "#EEE",
-                  opacity: owned.has(card.id) ? 1 : 0.36
+                  width: 80, height: 60, objectFit: "cover",
+                  borderRadius: 7, background: "#EEE"
                 }}
               />
-              {owned.has(card.id) && (
+              {/* 未取得時だけチェックマーク */}
+              {!owned.has(card.id) && (
                 <span className="card-check">✔️</span>
               )}
             </div>
