@@ -263,3 +263,37 @@ html, body {
 .tabbar-outer::-webkit-scrollbar-track {
   background: #fff;
 }
+
+.card-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 4px;
+  margin-left: 10px;
+  margin-bottom: 2px;
+}
+
+.card-series-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: #FFA500;
+  line-height: 1;
+  letter-spacing: 0;
+  margin-bottom: 0px;
+}
+
+.card-area {
+  font-size: 13px;
+  font-weight: 400;
+  color: #444;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.card-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 4px;
+  margin-left: 10px;
+}

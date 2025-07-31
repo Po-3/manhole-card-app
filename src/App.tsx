@@ -76,7 +76,7 @@ export default function App() {
   };
 
   return (
-    <div className="app-root">
+    <div className="app-root" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
       {/* ヘッダー */}
       <div className="header-appbar">
         <img src="/manhole-icon.svg" className="app-icon" alt="icon" />
@@ -126,7 +126,9 @@ export default function App() {
               />
               {/* 取得済みのときだけチェックマーク */}
               {owned.has(card.id) && (
-                <span className="card-check">✔️</span>
+                <span className="card-check" style={{
+                  position: "absolute", right: 7, top: 7, color: "#FFA500", fontSize: 20, fontWeight: 700
+                }}>✔️</span>
               )}
             </div>
             <div className="card-code">{card.details}</div>
