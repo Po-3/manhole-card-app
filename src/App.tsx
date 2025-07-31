@@ -121,7 +121,7 @@ export default function App() {
                 }}
               />
               {/* 未取得時だけチェックマーク */}
-              {!owned.has(card.id) && (
+              {!owned.has(card.id)  && (
                 <span className="card-check">✔️</span>
               )}
             </div>
