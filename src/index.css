@@ -1,200 +1,152 @@
-/* 1. Tailwind Base（リセット＆プリプロセッサ） */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* 2. グローバルスタイル＆カスタムリセット */
-:root {
-  font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: light;
-  color: #223;
-  background: linear-gradient(135deg, #f5f7fa 0%, #ffe7fa 100%);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', Arial, sans-serif;
-  background: linear-gradient(135deg, #f5f7fa 0%, #ffe7fa 100%);
-  color: #223;
+/* public/index.css などグローバルCSS */
+html, body {
   margin: 0;
-  min-width: 320px;
+  padding: 0;
+  background: #FAFAFA;
+  width: 393px;
   min-height: 100vh;
-  background: inherit;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'SF Pro Display', 'SF Pro Icons', 'PingFang SC', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: none;
-  transition: color .15s;
-}
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  font-size: 2.1em;
-  font-weight: 900;
-  color: #24344d;
-  margin-bottom: 1.2rem;
-  letter-spacing: .01em;
-  text-shadow: 0 3px 18px #f5f5f9aa;
-  line-height: 1.13;
-}
-
-/* スマホで見やすく */
-@media (max-width: 700px) {
-  h1 {
-    font-size: 1.3em;
-    margin-bottom: 0.7rem;
-  }
-}
-
-/* 操作ボタン（classで上書き推奨だがデフォも強化） */
-button {
-  border-radius: 8px;
-  border: none;
-  padding: 0.63em 1.2em;
-  font-size: 1em;
-  font-weight: 600;
-  font-family: inherit;
-  background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 2px 8px #bbb2;
-  transition: background .18s, box-shadow .13s, transform .11s;
-}
-button:hover, button:focus {
-  background: linear-gradient(90deg, #24344d 0%, #182848 100%);
-  box-shadow: 0 4px 15px #aaa6;
-  transform: translateY(-2px) scale(1.04);
-}
-button:focus-visible {
-  outline: 3px solid #b3aaffcc;
-}
-
-/* 入力系 */
-input[type="search"], select, input[type="number"] {
-  border: 1.3px solid #b3aaff;
-  border-radius: 7px;
-  padding: 7px 12px;
-  font-size: 1em;
-  background: #f8f8fc;
-  margin-right: 5px;
-  transition: border .17s;
-}
-input:focus, select:focus {
-  border-color: #4b6cb7;
-  outline: none;
-}
-
-/* スクロールバーも明るめに */
-::-webkit-scrollbar {
-  width: 9px;
-  background: #f6eefd;
-}
-::-webkit-scrollbar-thumb {
-  background: #dedcf6;
-  border-radius: 5px;
-}
-
-/* 進捗バー（上書きclass推奨） */
-.progress-bar {
-  background: #e4eaf2;
-  border-radius: 10px;
-  position: relative;
-  height: 18px;
-  overflow: hidden;
-  margin: 0 0 7px 0;
-}
-.progress-bar-inner {
-  background: linear-gradient(90deg, #4caf50 65%, #fbd786 100%);
-  height: 100%;
-  border-radius: 10px;
-  transition: width .3s;
-}
-
-.main-root {
-  max-width: 700px;
+#root {
+  width: 393px;
   margin: 0 auto;
-  padding: 18px 0 48px 0;
-  background: linear-gradient(120deg, #f5f7fa 0%, #ffe7fa 100%);
-  min-height: 100vh;
+  background: #FAFAFA;
 }
-.header-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px;
-}
-.user-name {
-  margin-right: 12px;
-  font-size: 1em;
-  color: #456;
-}
-.progress-row {
+
+/* ヘッダー */
+.header-appbar {
+  width: 100%;
+  height: 54px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 10px;
+  padding: 0 16px;
+  background: #FAFAFA;
+  border-bottom: 1px solid #EEE;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
-.progress-bar {
-  flex: 1;
-  min-width: 100px;
-  background: #ddd;
-  border-radius: 10px;
-  height: 16px;
-  position: relative;
-  overflow: hidden;
+.header-appbar .app-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 6px;
+}
+.header-appbar .app-title {
+  color: #FF9800;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: -0.5px;
+}
+.header-appbar .app-count {
+  margin-left: auto;
+  font-size: 20px;
+  color: #FF9800;
+  font-weight: bold;
 }
 
-.progress-bar-inner {
-  background: linear-gradient(90deg, #4caf50 65%, #fbd786 100%);
-  height: 100%;
-  border-radius: 10px;
-  transition: width .3s;
-}
-
-.tab-nav {
+/* タブバー */
+.tabbar {
+  width: 100%;
   display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  flex-direction: row;
+  overflow-x: auto;
+  padding: 0 8px 0 8px;
+  margin-bottom: 6px;
+  gap: 6px;
+  background: #FAFAFA;
+}
+.tab {
+  height: 36px;
+  min-width: 82px;
+  border-radius: 18px;
+  background: #FFF;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #FF9800;
+  margin-right: 4px;
+  transition: 0.18s;
+}
+.tab.active {
+  background: #FF9800;
+  color: #FFF;
+  font-weight: bold;
+}
+
+/* カードグリッド */
+.cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px;
+  justify-content: space-between;
+}
+.card {
+  width: 160px;
+  height: 130px;
+  border-radius: 12px;
+  background: #FFF;
+  box-shadow: none;
+  padding: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.card-series {
+  position: absolute;
+  left: 12px;
+  top: 8px;
+  color: #FF9800;
+  font-size: 18px;
+  font-weight: bold;
+}
+.card-area {
+  width: 100%;
+  text-align: center;
+  color: #FF9800;
+  font-size: 14px;
+  font-weight: 600;
   margin-top: 8px;
 }
-.tab-button {
-  background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
-  color: #fff;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  padding: 8px 24px;
-  min-width: 70px;
-  font-size: 1.07em;
-  cursor: pointer;
-  box-shadow: 0 2px 6px #bbb3;
-  transition: background .15s, box-shadow .15s, transform .10s;
+.card-imgbox {
+  width: 80px;
+  height: 60px;
+  margin: 0 auto 4px auto;
+  border-radius: 7px;
+  background: #E5E5E5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
-.tab-button.active {
-  background: linear-gradient(90deg, #6fdcff 0%, #387fff 100%);
-  color: #fff;
+.card-code {
+  width: 100%;
+  text-align: center;
+  color: #FF9800;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  margin-top: auto;
 }
 
-.app-root { max-width:540px; margin:0 auto; }
-.tab-nav { display:flex; justify-content:center; gap:8px; margin-bottom:4px; }
-.tab-button { flex:1; padding:10px 0; border:none; border-radius:12px 12px 0 0; font-weight:700; background:#f0f4fa; color:#556; cursor:pointer;}
-.tab-button.active { background:linear-gradient(90deg,#4b6cb7 0%,#182848 100%); color:#fff; }
-.progress-bar { height:12px; background:#eee; border-radius:6px; overflow:hidden; }
-.progress-bar-inner { background:linear-gradient(90deg,#4caf50 60%,#fbd786 100%); height:100%; transition:width .3s; border-radius:6px; }
-.card-box:hover { background:#f9fafb; }
-.modal-card-detail, .modal-overlay { animation: fadeIn .25s; }
-@keyframes fadeIn { from { opacity:0; transform:scale(.96);} to {opacity:1;transform:scale(1);} }
-@media (max-width:700px){
-  .app-root, .modal-card-detail{max-width:100vw;}
-  .card-img { width:72px; height:100px; }
+.card-check {
+  position: absolute;
+  left: 50%;
+  top: 42px;
+  transform: translate(-50%, 0);
+  font-size: 36px;
+  color: #DDD;
+  opacity: 0.9;
+}
+.card.owned .card-imgbox {
+  background: #FFF;
+}
+.card.owned .card-check {
+  color: #FF9800;
+  opacity: 1;
+}
+.card.owned {
+  background: #FFF5E0;
 }
