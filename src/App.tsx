@@ -46,7 +46,7 @@ export default function App() {
   // --- タブラベル ---
   const TAB_LABELS = [
     "ALL", "取得済", "未取得",
-    ...uniqueSeries.map(s => `第${s}弾`)
+    ...uniqueSeries.map(s => `${s}`)
   ];
 
   // --- フィルタ ---
