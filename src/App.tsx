@@ -113,7 +113,7 @@ export default function App() {
               <span className="card-series-num">{card.series}</span>
               <span className="card-area">{card.prefecture}{card.city}</span>
             </div>
-            <div className="card-imgbox">
+            <div className="card-imgbox" style={{ position: "relative", width: 80, height: 60 }}>
               {/* サムネイル画像 */}
               <img
                 src={card.imageUrl}
@@ -121,14 +121,30 @@ export default function App() {
                 className="card-img"
                 style={{
                   width: 80, height: 60, objectFit: "cover",
-                  borderRadius: 7, background: "#EEE"
+                  borderRadius: 7, background: "#EEE", display: "block"
                 }}
               />
-              {/* 取得済みのときだけチェックマーク */}
+              {/* 取得済みのときだけチェックマークを画像右上に重ねる */}
               {owned.has(card.id) && (
-                <span className="card-check" style={{
-                  position: "absolute", right: 7, top: 7, color: "#FFA500", fontSize: 20, fontWeight: 700
-                }}>✔️</span>
+                <span
+                  className="card-check"
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    right: 4,
+                    color: "#FFA500",
+                    background: "#fff",
+                    borderRadius: "50%",
+                    width: 20,
+                    height: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                    fontWeight: 700,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.09)"
+                  }}
+                >✔️</span>
               )}
             </div>
             <div className="card-code">{card.details}</div>
