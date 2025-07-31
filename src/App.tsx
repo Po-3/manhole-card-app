@@ -54,7 +54,7 @@ export default function App() {
   if (filter === "取得済") filtered = cards.filter(c => owned.has(c.id));
   else if (filter === "未取得") filtered = cards.filter(c => !owned.has(c.id));
   else if (filter.startsWith("第")) {
-    const seriesNum = filter.replace(, "").replace(, "");
+    const seriesNum = filter.replace("", "").replace("", "");
     filtered = cards.filter(c => c.series === seriesNum);
   }
 
