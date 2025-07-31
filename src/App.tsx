@@ -12,6 +12,7 @@ type Card = {
 
 const STORAGE_KEY = "owned-manhole-cards";
 
+// 所有情報の初期化
 function getInitialOwned(): Set<string> {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
@@ -46,7 +47,7 @@ export default function App() {
   // --- タブラベル ---
   const TAB_LABELS = [
     "ALL", "取得済", "未取得",
-    ...uniqueSeries.map(s => `${s}`)
+    ...uniqueSeries.map(s => `第${s}弾`)
   ];
 
   // --- フィルタ ---
@@ -54,7 +55,7 @@ export default function App() {
   if (filter === "取得済") filtered = cards.filter(c => owned.has(c.id));
   else if (filter === "未取得") filtered = cards.filter(c => !owned.has(c.id));
   else if (filter.startsWith("第")) {
-    const seriesNum = filter.replace("", "").replace("", "");
+    const seriesNum = filter.replace("第", "").replace("弾", "");
     filtered = cards.filter(c => c.series === seriesNum);
   }
 
@@ -107,8 +108,11 @@ export default function App() {
             role="button"
             aria-pressed={owned.has(card.id)}
           >
-            <div className="card-series">{`${card.series}`}</div>
-            <div className="card-area">{card.prefecture}{card.city}</div>
+            {/* 弾数・市区町村エリア（縦並び） */}
+            <div className="card-header-info">
+              <span className="card-series-num">{card.series}</span>
+              <span className="card-area">{card.prefecture}{card.city}</span>
+            </div>
             <div className="card-imgbox">
               {/* サムネイル画像 */}
               <img
@@ -120,8 +124,8 @@ export default function App() {
                   borderRadius: 7, background: "#EEE"
                 }}
               />
-              {/* 未取得時だけチェックマーク */}
-              {!owned.has(card.id) && (
+              {/* 取得済みのときだけチェックマーク */}
+              {owned.has(card.id) && (
                 <span className="card-check">✔️</span>
               )}
             </div>
