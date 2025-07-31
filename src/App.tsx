@@ -10,16 +10,19 @@ type Card = {
   imageUrl: string;
 };
 
-const TABS = ["ALL", "取得済", "未取得"];
+const TAB_LABELS = [
+  "ALL", "取得済", "未取得",
+  ...Array.from({ length: 26 }, (_, i) => `第${26 - i}弾`)
+];
 const STORAGE_KEY = "owned-manhole-cards";
 
 // --- 所有情報の初期化 ---
 function getInitialOwned(): Set<string> {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
-    return s ? new Set(JSON.parse(s)) : new Set();
+    return s ? new Set<string>(JSON.parse(s)) : new Set<string>();
   } catch {
-    return new Set();
+    return new Set<string>();
   }
 }
 
@@ -43,7 +46,8 @@ export default function App() {
   // --- フィルタ ---
   let filtered = cards;
   if (filter === "取得済") filtered = cards.filter(c => owned.has(c.id));
-  if (filter === "未取得") filtered = cards.filter(c => !owned.has(c.id));
+  else if (filter === "未取得") filtered = cards.filter(c => !owned.has(c.id));
+  else if (filter.startsWith("第")) filtered = cards.filter(c => c.series === filter.replace("第", "").replace("弾", ""));
 
   // --- 所有数カウント ---
   const ownedCount = owned.size;
@@ -59,7 +63,7 @@ export default function App() {
   };
 
   return (
-    <div>
+    <div className="app-root">
       {/* ヘッダー */}
       <div className="header-appbar">
         <img src="/manhole-icon.svg" className="app-icon" alt="icon" />
@@ -68,15 +72,16 @@ export default function App() {
       </div>
 
       {/* タブバー */}
-      <div className="tabbar">
-        {TABS.map(t => (
-          <button
-            key={t}
-            className={`tab${filter === t ? " active" : ""}`}
-            onClick={() => setFilter(t)}
-          >{t}</button>
-        ))}
-        {/* 弾タブを追加するならmapで追加 */}
+      <div className="tabbar-outer">
+        <div className="tabbar-scroll">
+          {TAB_LABELS.map(t => (
+            <button
+              key={t}
+              className={`tab-btn${filter === t ? " active" : ""}`}
+              onClick={() => setFilter(t)}
+            >{t}</button>
+          ))}
+        </div>
       </div>
 
       {/* カードグリッド */}
@@ -93,11 +98,12 @@ export default function App() {
             <div className="card-series">{card.series}</div>
             <div className="card-area">{card.prefecture}{card.city}</div>
             <div className="card-imgbox">
-              {/* サムネイル or グレーout */}
+              {/* サムネイル画像 */}
               <img
                 src={card.imageUrl}
                 alt=""
-                style={{ width: "80px", height: "60px", objectFit: "cover", borderRadius: 7 }}
+                className="card-img"
+                style={{ width: 80, height: 60, objectFit: "cover", borderRadius: 7, background: "#EEE" }}
               />
               {!owned.has(card.id) &&
                 <span className="card-check">✔️</span>
@@ -106,6 +112,9 @@ export default function App() {
             <div className="card-code">{card.details}</div>
           </div>
         ))}
+        {!filtered.length &&
+          <div className="no-data-msg">カードがありません</div>
+        }
       </div>
     </div>
   );

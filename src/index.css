@@ -150,3 +150,55 @@ html, body {
 .card.owned {
   background: #FFF5E0;
 }
+
+.tabbar-outer {
+  width: 100vw;
+  max-width: 393px;
+  margin: 8px auto 0;
+  overflow-x: auto;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+.tabbar-scroll {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+}
+.tab-btn {
+  min-width: 82px;
+  max-width: 82px;
+  height: 36px;
+  border-radius: 18px;
+  background: #FFF;
+  color: #FFA500;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  margin: 0;
+  padding: 0 12px;
+  cursor: pointer;
+  box-sizing: border-box;
+  user-select: none;
+}
+.tab-btn.active {
+  background: #FFA500;
+  color: #FFF;
+  font-weight: 700;
+}
+.tab-btn:hover:not(.active) {
+  background: #FFF2D0;
+}
+.tabbar-scroll::-webkit-scrollbar {
+  height: 3px;
+  background: #FFF;
+}
+.tabbar-scroll::-webkit-scrollbar-thumb {
+  background: #FFA500;
+  border-radius: 3px;
+}
