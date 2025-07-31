@@ -46,7 +46,7 @@ export default function App() {
   // --- タブラベル ---
   const TAB_LABELS = [
     "ALL", "取得済", "未取得",
-    ...uniqueSeries.map(s => `第${s}弾`)
+    ...uniqueSeries.map(s => `${s}`)
   ];
 
   // --- フィルタ ---
@@ -54,7 +54,7 @@ export default function App() {
   if (filter === "取得済") filtered = cards.filter(c => owned.has(c.id));
   else if (filter === "未取得") filtered = cards.filter(c => !owned.has(c.id));
   else if (filter.startsWith("第")) {
-    const seriesNum = filter.replace("第", "").replace("弾", "");
+    const seriesNum = filter.replace(, "").replace(, "");
     filtered = cards.filter(c => c.series === seriesNum);
   }
 
@@ -107,7 +107,7 @@ export default function App() {
             role="button"
             aria-pressed={owned.has(card.id)}
           >
-            <div className="card-series">{`第${card.series}弾`}</div>
+            <div className="card-series">{`${card.series}`}</div>
             <div className="card-area">{card.prefecture}{card.city}</div>
             <div className="card-imgbox">
               {/* サムネイル画像 */}
