@@ -98,16 +98,21 @@ export default function App() {
             <div className="card-series">{card.series}</div>
             <div className="card-area">{card.prefecture}{card.city}</div>
             <div className="card-imgbox">
-              {/* サムネイル画像 */}
               <img
                 src={card.imageUrl}
                 alt=""
                 className="card-img"
-                style={{ width: 80, height: 60, objectFit: "cover", borderRadius: 7, background: "#EEE" }}
+                style={{
+                  width: 80, height: 60,
+                  objectFit: "cover",
+                  borderRadius: 7,
+                  background: "#EEE",
+                  opacity: owned.has(card.id) ? 1 : 0.36
+                }}
               />
-              {!owned.has(card.id) &&
+              {owned.has(card.id) && (
                 <span className="card-check">✔️</span>
-              }
+              )}
             </div>
             <div className="card-code">{card.details}</div>
           </div>
