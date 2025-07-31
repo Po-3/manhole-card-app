@@ -202,3 +202,64 @@ html, body {
   background: #FFA500;
   border-radius: 3px;
 }
+
+.tabbar-outer {
+  width: 100vw;
+  max-width: 393px;
+  margin: 0 auto;
+  padding: 8px 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  box-sizing: border-box;
+  /* iOS風の極細スクロールバー */
+  scrollbar-color: #FFD580 #fff;
+  scrollbar-width: thin;
+}
+.tabbar-scroll {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 8px;
+}
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  max-width: 82px;
+  height: 36px;
+  border-radius: 18px;
+  margin: 0 4px;
+  background: #fff;
+  color: #FFA500;
+  font-size: 15px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: none;
+}
+.tab-btn.active {
+  background: #FFA500;
+  color: #fff;
+  font-weight: bold;
+}
+.tab-btn:not(.active):hover,
+.tab-btn:not(.active):focus {
+  background: #FFE4B5;
+  color: #FFA500;
+}
+/* スクロールバーiOS風 */
+.tabbar-outer::-webkit-scrollbar {
+  height: 3px;
+  background: #fff;
+}
+.tabbar-outer::-webkit-scrollbar-thumb {
+  background: #FFD580;
+  border-radius: 2px;
+}
+.tabbar-outer::-webkit-scrollbar-track {
+  background: #fff;
+}
