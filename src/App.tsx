@@ -46,7 +46,7 @@ export default function App() {
   // --- タブラベル ---
   const TAB_LABELS = [
     "ALL", "取得済", "未取得",
-    ...uniqueSeries.map(s => `${s}`)
+    ...uniqueSeries.map(s => `第${s}弾`)
   ];
 
   // --- フィルタ ---
@@ -121,7 +121,7 @@ export default function App() {
                 }}
               />
               {/* 未取得時だけチェックマーク */}
-              {!owned.has(card.id)  && (
+              {!owned.has(card.id) && (
                 <span className="card-check">✔️</span>
               )}
             </div>
